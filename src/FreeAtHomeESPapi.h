@@ -25,6 +25,9 @@ class FahESPSwitchDevice;
 class FreeAtHomeESPapi : public FahEventEnabledClass
 {
 public:
+	static const uint8 FAHESP_VERSION_MAJOR = 0;
+	static const uint8 FAHESP_VERSION_MINOR = 2;
+	String Version() { return String(FAHESP_VERSION_MAJOR) + "." + String(FAHESP_VERSION_MINOR); }
 	FreeAtHomeESPapi();
 	~FreeAtHomeESPapi();
 	bool ConnectToSysAP(const String& SysAPHostname, const String& AuthorizationHeader, const bool& useSSL);

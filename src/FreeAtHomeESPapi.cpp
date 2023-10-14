@@ -170,12 +170,14 @@ bool FreeAtHomeESPapi::ConnectToSysAP(const String& SysAPHostname, const String&
 	if (ws != NULL)
 	{
 		if (ws->isConnected()) //Do not attempt to connect if a connection exists
+		{
 			return true;
+		}
 		else //Connection closed, delete socket
 		{
 			delete ws;
 			ws = NULL;
-			return false;
+			//return false;
 		}
 	}
 

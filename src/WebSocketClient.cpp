@@ -19,7 +19,8 @@
 #define WS_MASK           0x80
 #define WS_SIZE16         126
 
-WebSocketClient::WebSocketClient(bool secure) {
+WebSocketClient::WebSocketClient(bool secure)
+{
 	if (secure) {
 		WiFiClientSecure *w = new WiFiClientSecure();
 		w->setInsecure();  // Disable certificate verification
@@ -29,15 +30,23 @@ WebSocketClient::WebSocketClient(bool secure) {
 		this->client = new WiFiClient;
 }
 
-WebSocketClient::~WebSocketClient() {
+WebSocketClient::~WebSocketClient()
+{
+	while (this->client->available())
+	{
+		//Empty buffers
+		this->client->read();
+	}
 	delete this->client;
 }
 
-void WebSocketClient::setAuthorizationHeader(const String& header) {
+void WebSocketClient::setAuthorizationHeader(const String& header)
+{
 	this->authorizationHeader = header;
 }
 
-String WebSocketClient::generateKey() {
+String WebSocketClient::generateKey()
+{
 	String key = "";
 	for (int i = 0; i < 22; ++i) {
 		int r = random(0, 3);
@@ -196,7 +205,7 @@ int WebSocketClient::timedRead() {
 		{
 			return 0;
 		}
-		delay(20);
+		delay(5);
 	}
 	return client->read();
 }
@@ -214,7 +223,15 @@ void WebSocketClient::sendKeepAlive()
 bool WebSocketClient::getMessage(String& message) {
 	if (!client->connected())
 	{
-		return false; 
+		if(client->available() < 8)
+		{
+			return false;
+		}
+		else
+		{
+			//Disconnected, but there is still data in the pipeline
+			//Continue to process this message
+		}
 	}
 
 	if (!client->available())
@@ -225,10 +242,10 @@ bool WebSocketClient::getMessage(String& message) {
 
 	// 1. read type and fin
 	unsigned int msgtype = timedRead();
-	if (!client->connected())
+	/*if (!client->connected())
 	{
 		return false;
-	}
+	}*/
 
 	// 2. read length and check if masked
 	int length = timedRead();

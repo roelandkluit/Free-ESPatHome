@@ -2,7 +2,12 @@
 
 ## Library that implements the Busch-Jeager / ABB Free@Home API for ESP8266 and ESP32.
 
-It implements a basic connection to a Busch-Jeaer / ABB system access point. Including the websocket for events and the device and datapoint api for device creation.
+It implements a basic connection to a Busch-Jeager / ABB system access point. Including the websocket for events and the device and datapoint api for device creation.
+
+More information on hte System Access Point:
+
+ABB: https://new.abb.com/products/2CKA006200A0154/sap-s-13
+Busch-jaeger: https://www.busch-jaeger.de/produkt/system-access-point-20
 
 A basic implementation of the Virtual Switch is included.
 

@@ -179,7 +179,7 @@ bool HTTPClient::ReadPayload()
         else
         {
             this->client->stop();
-            Serial.println("Stopping");
+            //Serial.println("Stopping");
             this->state = HTTPCLIENT_STATE::HTTPCLIENT_STATE_CLOSED;
         }
     }
@@ -204,7 +204,7 @@ void HTTPClient::abort()
 {
     if(this->state >= HTTPCLIENT_STATE::HTTPCLIENT_STATE_CONNECTED)
     {
-        Serial.println("AbortConn");
+        //Serial.println("AbortConn");
         this->client->stop();
         this->state = HTTPCLIENT_STATE::HTTPCLIENT_STATE_CLOSED;     
         ClearVariables();

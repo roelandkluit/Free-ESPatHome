@@ -1,9 +1,15 @@
-/*
-Free-ESPAtHome
-Copyright 2023 Roeland Kluit, GPL License
-Implements the Busch-Jeager / ABB Free@Home API for ESP8266 and ESP32.
-*/
-
+/*************************************************************************************************************
+*
+* Title			    : Free-ESPatHome
+* Description:      : Library that implements the Busch-Jeager / ABB Free@Home API for ESP8266 and ESP32.
+* Version		    : v 0.2
+* Last updated      : 2023.10.20
+* Target		    : ESP32, ESP8266, ESP8285
+* Author            : Roeland Kluit
+* Web               : https://github.com/roelandkluit/Free-ESPatHome
+* License           : GPL-3.0 license
+*
+**************************************************************************************************************/
 #include "FahHTTPClient.h"
 
 HTTPREQUEST_STATUS FahHTTPClient::GetAsyncStatus()
@@ -195,12 +201,13 @@ bool FahHTTPClient::PutHTTPRequest(const String& Method, const String& URI, cons
 {
 	if (this->GetState() == HTTPCLIENT_STATE::HTTPCLIENT_STATE_CONNECTED)
 	{
-		this->AddRequestHeader("Content-Type", "application/json");
-		this->AddRequestHeader("Accept", "application/json");
-		this->AddRequestHeader("Host", "sysap");
+		String appjson = String(F("application/json"));
+		this->AddRequestHeader(String(F("Content-Type")), appjson);
+		this->AddRequestHeader(String(F("Accept")), appjson);
+		this->AddRequestHeader(String(F("Host")), String(F("sysap")));
 		if (this->SysAp->authorizationHeader.length() != 0)
 		{
-			this->AddRequestHeader("Authorization", this->SysAp->authorizationHeader);
+			this->AddRequestHeader(String(F("Authorization")), this->SysAp->authorizationHeader);
 		}
 
 		if (!this->Request(Method, URI, PostData))

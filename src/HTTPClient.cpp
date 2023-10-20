@@ -1,9 +1,15 @@
-/*
-Free-ESPAtHome
-Copyright 2023 Roeland Kluit, GPL License
-Implements the Busch-Jeager / ABB Free@Home API for ESP8266 and ESP32.
-*/
-
+/*************************************************************************************************************
+*
+* Title			    : Free-ESPatHome
+* Description:      : Library that implements the Busch-Jeager / ABB Free@Home API for ESP8266 and ESP32.
+* Version		    : v 0.2
+* Last updated      : 2023.10.20
+* Target		    : ESP32, ESP8266, ESP8285
+* Author            : Roeland Kluit
+* Web               : https://github.com/roelandkluit/Free-ESPatHome
+* License           : GPL-3.0 license
+*
+**************************************************************************************************************/
 #include "HTTPClient.h"
 #include <WiFiClientSecure.h>
 
@@ -19,6 +25,7 @@ HTTPClient::HTTPClient(const bool& Secure)
     {    
         this->client = new WiFiClient();
     }
+    ReturnBody.reserve(MAXBODYSIZE);
 }
 
 bool HTTPClient::Connect(const String& RemoteHost, const unsigned int& port)
@@ -75,6 +82,7 @@ bool HTTPClient::ReadResult(uint16_t* resultcode)
         }
         else
         {
+            this->client->stop();
             this->state = HTTPCLIENT_STATE::HTTPCLIENT_STATE_FAILED;
             return false;
         }
@@ -119,6 +127,7 @@ bool HTTPClient::ReadHeaders(String& Key, String& Value)
                 }
                 else
                 {
+                    //Todo check max lenght of headers??
 			        int col = line.indexOf(":");
                     if(col > 0)
                     {
@@ -134,6 +143,7 @@ bool HTTPClient::ReadHeaders(String& Key, String& Value)
         }
         else
         {
+            this->client->stop();
             this->state = HTTPCLIENT_STATE::HTTPCLIENT_STATE_FAILED;
         }
     }
@@ -168,6 +178,8 @@ bool HTTPClient::ReadPayload()
         }
         else
         {
+            this->client->stop();
+            Serial.println("Stopping");
             this->state = HTTPCLIENT_STATE::HTTPCLIENT_STATE_CLOSED;
         }
     }
@@ -192,9 +204,10 @@ void HTTPClient::abort()
 {
     if(this->state >= HTTPCLIENT_STATE::HTTPCLIENT_STATE_CONNECTED)
     {
+        Serial.println("AbortConn");
         this->client->stop();
         this->state = HTTPCLIENT_STATE::HTTPCLIENT_STATE_CLOSED;     
-        ClearVariables();   
+        ClearVariables();
     }
 }
 

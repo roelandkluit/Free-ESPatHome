@@ -1,9 +1,15 @@
-/*
-Free-ESPAtHome
-Copyright 2023 Roeland Kluit, GPL License
-Implements the Busch-Jeager / ABB Free@Home API for ESP8266 and ESP32.
-*/
-
+/*************************************************************************************************************
+*
+* Title			    : Free-ESPatHome
+* Description:      : Library that implements the Busch-Jeager / ABB Free@Home API for ESP8266 and ESP32.
+* Version		    : v 0.2
+* Last updated      : 2023.10.20
+* Target		    : ESP32, ESP8266, ESP8285
+* Author            : Roeland Kluit
+* Web               : https://github.com/roelandkluit/Free-ESPatHome
+* License           : GPL-3.0 license
+*
+**************************************************************************************************************/
 #include "FahESPSwitchDevice.h"
 
 const String FahESPSwitchDevice::ConstStringDeviceType = "SwitchingActuator";
@@ -38,7 +44,7 @@ void FahESPSwitchDevice::SetState(bool isOn)
 		Body = "1";
 	}
 	EnqueDataPoint(FreeAtHomeESPapi::KEY_CHANEL0, FreeAtHomeESPapi::KEY_ODP0000, Body);
-	this->NotifyCallback(FAHESPAPI_EVENT::FAHESPAPI_ON_DEVICE_EVENT, this->FahDevice, FreeAtHomeESPapi::KEY_CHANEL0.c_str(), "ON", (void*)isOn);
+	this->NotifyCallback(FAHESPAPI_EVENT::FAHESPAPI_ON_DEVICE_EVENT, this->FahDevice, FreeAtHomeESPapi::KEY_CHANEL0.c_str(), String(F("ON")).c_str(), (void*)isOn);
 }
 
 FahESPSwitchDevice::~FahESPSwitchDevice()

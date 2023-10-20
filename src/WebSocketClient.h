@@ -15,6 +15,8 @@ public:
 
 	bool isConnected();
 
+	int Available();
+
 	void disconnect();
 	
 	void send(const String& str);	

@@ -1,8 +1,20 @@
+/*************************************************************************************************************
+*
+* Title			    : Free-ESPatHome
+* Description:      : Library that implements the Busch-Jeager / ABB Free@Home API for ESP8266 and ESP32.
+* Version		    : v 0.2
+* Last updated      : 2023.10.20
+* Target		    : ESP32, ESP8266, ESP8285
+* Author            : Roeland Kluit
+* Web               : https://github.com/roelandkluit/Free-ESPatHome
+* License           : GPL-3.0 license
+*
+**************************************************************************************************************/
 #pragma once
 #include <WiFiClient.h>
 #include "BuildConfig.h"
 
-#define MAXBODYSIZE 1024
+#define MAXBODYSIZE 2048
 
 namespace HTTPCLIENT_STATES
 {

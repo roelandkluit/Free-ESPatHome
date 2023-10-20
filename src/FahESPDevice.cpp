@@ -1,9 +1,15 @@
-/*
-Free-ESPAtHome
-Copyright 2023 Roeland Kluit, GPL License
-Implements the Busch-Jeager / ABB Free@Home API for ESP8266 and ESP32.
-*/
-
+/*************************************************************************************************************
+*
+* Title			    : Free-ESPatHome
+* Description:      : Library that implements the Busch-Jeager / ABB Free@Home API for ESP8266 and ESP32.
+* Version		    : v 0.2
+* Last updated      : 2023.10.20
+* Target		    : ESP32, ESP8266, ESP8285
+* Author            : Roeland Kluit
+* Web               : https://github.com/roelandkluit/Free-ESPatHome
+* License           : GPL-3.0 license
+*
+**************************************************************************************************************/
 #include "FahESPDevice.h"
 
 bool FahESPDevice::EnqueDataPoint(const String Channel, const String DataPoint, const String Value)
@@ -96,7 +102,7 @@ void FahESPDevice::processBase()
 
 		String URI = FreeAtHomeESPapi::ConstructDeviceRegistrationURI(SerialNr);
 		String HTTPPostData = FreeAtHomeESPapi::ConstructDeviceRegistrationBody(this->FahDeviceType, "", this->TimeOut);
-		if(httpclt->HTTPRequestAsync("PUT", URI, HTTPPostData))
+		if(httpclt->HTTPRequestAsync(String(F("PUT")), URI, HTTPPostData))
 		{
 			//ASync started, reset counter
 			this->LastSecondsInterval = Seconds();
@@ -115,7 +121,7 @@ void FahESPDevice::processBase()
 			if (FreeAtHomeESPapi::GetStringToken(strDataPoint, strDataPointValue, token_idx, ':'))
 			{
 				String URI = FreeAtHomeESPapi::ConstructDeviceDataPointNotificationURI(strDataPointPart);
-				if (!httpclt->HTTPRequestAsync("PUT", URI, strDataPointValue))
+				if (!httpclt->HTTPRequestAsync(String(F("PUT")), URI, strDataPointValue))
 				{
 					/*DEBUG_P("ERROR_DPN:");
 					DEBUG_P(strDataPointPart);

@@ -1,8 +1,15 @@
-/*
-Free-ESPAtHome
-Copyright 2023 Roeland Kluit, GPL License
-Implements the Busch-Jeager / ABB Free@Home API for ESP8266 and ESP32.
-*/
+/*************************************************************************************************************
+*
+* Title			    : Free-ESPatHome
+* Description:      : Library that implements the Busch-Jeager / ABB Free@Home API for ESP8266 and ESP32.
+* Version		    : v 0.2
+* Last updated      : 2023.10.20
+* Target		    : ESP32, ESP8266, ESP8285
+* Author            : Roeland Kluit
+* Web               : https://github.com/roelandkluit/Free-ESPatHome
+* License           : GPL-3.0 license
+*
+**************************************************************************************************************/
 #include "FahEventEnabledClass.h"
 
 void FahEventEnabledClass::AddCallback(FREEATHOME_EVENT_CALLBACK __CALLBACK)

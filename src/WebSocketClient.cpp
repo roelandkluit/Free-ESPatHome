@@ -19,8 +19,7 @@
 #define WS_MASK           0x80
 #define WS_SIZE16         126
 
-WebSocketClient::WebSocketClient(bool secure)
-{
+WebSocketClient::WebSocketClient(bool secure) {
 	if (secure) {
 		WiFiClientSecure *w = new WiFiClientSecure();
 		w->setInsecure();  // Disable certificate verification
@@ -30,8 +29,7 @@ WebSocketClient::WebSocketClient(bool secure)
 		this->client = new WiFiClient;
 }
 
-WebSocketClient::~WebSocketClient()
-{
+WebSocketClient::~WebSocketClient() {
 	while (this->client->available())
 	{
 		//Empty buffers
@@ -40,13 +38,11 @@ WebSocketClient::~WebSocketClient()
 	delete this->client;
 }
 
-void WebSocketClient::setAuthorizationHeader(const String& header)
-{
+void WebSocketClient::setAuthorizationHeader(const String& header) {
 	this->authorizationHeader = header;
 }
 
-String WebSocketClient::generateKey()
-{
+String WebSocketClient::generateKey() {
 	String key = "";
 	for (int i = 0; i < 22; ++i) {
 		int r = random(0, 3);
@@ -69,19 +65,27 @@ void WebSocketClient::write(const char *data) {
         client->write(data);
 }
 
-bool WebSocketClient::connect(const String& host, const String& path, uint16_t port) {
-    if (!client->connect(host.c_str(), port))
-        return false;
+bool WebSocketClient::connect(const String& host, const String& path, uint16_t port)
+{
+	if (isConnected())
+	{
+		//Already connected
+		return true;
+	}
+	if (!client->connect(host.c_str(), port))
+	{
+		return false;
+	}
 
 	// send handshake
 	String handshake = String(F("GET ")) + path + String(F(" HTTP/1.1\r\nHost: ")) + host + 
-			F("\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Version: 13\r\nSec-WebSocket-Key: ") +
+			String(F("\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Version: 13\r\nSec-WebSocket-Key: ")) +
 			generateKey() + "==\r\n";
 
 	if (authorizationHeader != "")
 		handshake += String(F("Authorization: ")) + authorizationHeader + "\r\n";
 
-	handshake += "\r\n";
+	handshake += String(F("\r\n"));
 
 	DEBUG_P(F("[WS] sending handshake: "));
 	DEBUG_PL(handshake);
@@ -103,27 +107,27 @@ bool WebSocketClient::connect(const String& host, const String& path, uint16_t p
 		// HTTP Status
 		if (s.indexOf(F("HTTP/")) != -1) {
 			auto status = s.substring(9, 12);
-			if (status == "101")
+			if (status == String(F("101")))
 				hasCorrectStatus = true;
 			else {
-				DEBUG_PL("[WS] wrong status: " + status);
+				DEBUG_PL(String(F("[WS] wrong status: ")) + status);
 				return false;
 			}
 		}
 		// Headers
-		else if (s.indexOf(":") != -1) {
-			auto col = s.indexOf(":");
+		else if (s.indexOf(F(":")) != -1) {
+			auto col = s.indexOf(F(":"));
 			auto key = s.substring(0, col);
 			key.toLowerCase();  // Make all headers lowercase for case-insensitve comparison
 			auto value = s.substring(col + 2, s.length() - 1);
 
-			if (key == "connection" && (value == "Upgrade" || value == "upgrade"))
+			if (key == String(F("connection")) && (value == String(F("Upgrade")) || value == String(F("upgrade"))))
 				isUpgrade = true;
 
-			else if (key == "sec-websocket-accept")
+			else if (key == String(F("sec-websocket-accept")))
 				hasAcceptedKey = true;
 
-			else if (key == "upgrade" && value == "websocket")
+			else if (key == String(F("upgrade")) && value == String(F("websocket")))
 				isWebsocket = true;
 		}
 
@@ -150,6 +154,11 @@ bool WebSocketClient::isConnected() {
 	return this->websocketEstablished && client->connected();
 }
 
+int WebSocketClient::Available()
+{
+	return client->available();
+}
+
 void WebSocketClient::disconnect() {
 	client->stop();
     this->websocketEstablished = false;
@@ -163,7 +172,7 @@ void WebSocketClient::send(const String& str)
 void WebSocketClient::send(const String& str, const uint8_t& wsOpcode) {
 	DEBUG_PL(String(F("[WS] sending: ")) + str);
 	if (!client->connected()) {
-		DEBUG_PL("[WS] not connected...");
+		DEBUG_PL(F("[WS] not connected..."));
 		return;
 	}
 
@@ -215,7 +224,7 @@ void WebSocketClient::sendKeepAlive()
 	if ((Seconds() - this->LastSecondsInterval) > WS_PING_INTERVAL_TIMEOUT)
 	{
 		DEBUG_PL(F("ping"));
-		send("{}", WS_OPCODE_PING);
+		send(String(F("{}")), WS_OPCODE_PING);
 		this->LastSecondsInterval = Seconds();
 	}
 }
@@ -225,6 +234,7 @@ bool WebSocketClient::getMessage(String& message) {
 	{
 		if(client->available() < 8)
 		{
+			client->stop();
 			return false;
 		}
 		else

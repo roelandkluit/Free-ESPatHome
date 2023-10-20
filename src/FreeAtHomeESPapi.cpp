@@ -1,8 +1,15 @@
-/*
-Free-ESPAtHome
-Copyright 2023 Roeland Kluit, GPL License
-Implements the Busch-Jeager / ABB Free@Home API for ESP8266 and ESP32.
-*/
+/*************************************************************************************************************
+*
+* Title			    : Free-ESPatHome
+* Description:      : Library that implements the Busch-Jeager / ABB Free@Home API for ESP8266 and ESP32.
+* Version		    : v 0.2
+* Last updated      : 2023.10.20
+* Target		    : ESP32, ESP8266, ESP8285
+* Author            : Roeland Kluit
+* Web               : https://github.com/roelandkluit/Free-ESPatHome
+* License           : GPL-3.0 license
+*
+**************************************************************************************************************/
 #include "FreeAtHomeESPapi.h"
 #include "FahESPSwitchDevice.h"
 #include <base64.h>
@@ -122,9 +129,9 @@ FahESPDevice* FreeAtHomeESPapi::CreateDevice(const String& SerialNr, const Strin
 	String URI = FreeAtHomeESPapi::ConstructDeviceRegistrationURI(SerialNr);
 	String HTTPPostData = FreeAtHomeESPapi::ConstructDeviceRegistrationBody(deviceType, DisplayName, timeout);
 
-	if (!httpclt->HTTPRequest("PUT", URI, HTTPPostData))
+	if (!httpclt->HTTPRequest(String(F("PUT")), URI, HTTPPostData))
 	{
-		DEBUG_PL("Registration Failed");		
+		DEBUG_PL(F("Registration Failed"));		
 		return NULL;
 	}
 
@@ -159,11 +166,11 @@ bool FreeAtHomeESPapi::ConnectToSysAP(const String& SysAPHostname, const String&
 		#ifndef FORCE_ESP8266_SSL_OPTION_AVAILBLE
 			// the option useSSL does not work with an ESP8266 with multiple SSL sessions (WebSoscket and calls) due to memory restrictions
 			// use a ESP32 when using SSL with FaH
-			if (useSSL)
-			{
-				DEBUG_PL(String(F("useSSL does not work with an ESP8266")));
-				return false;
-			}
+		if (useSSL)
+		{
+			DEBUG_PL(String(F("useSSL does not work with an ESP8266")));
+			return false;
+		}
 		#endif // ! FORCE_ESP8266_SSL_OPTION_AVAILBLE
 	#endif // ESP8266
 	
@@ -269,8 +276,9 @@ bool FreeAtHomeESPapi::process()
 {
 	if (ws != NULL)
 	{
-		if (!ws->isConnected())
+		if ((!ws->isConnected()) && (ws->Available() <= 8))
 		{
+			//Disconnected and no data pending to process
 			return false;
 		}
 		else

@@ -2,8 +2,8 @@
 *
 * Title			    : Free-ESPatHome
 * Description:      : Library that implements the Busch-Jeager / ABB Free@Home API for ESP8266 and ESP32.
-* Version		    : v 0.2
-* Last updated      : 2023.10.20
+* Version		    : v 0.3
+* Last updated      : 2023.10.23
 * Target		    : ESP32, ESP8266, ESP8285
 * Author            : Roeland Kluit
 * Web               : https://github.com/roelandkluit/Free-ESPatHome
@@ -38,13 +38,13 @@ bool FahESPSwitchDevice::GetState()
 void FahESPSwitchDevice::SetState(bool isOn)
 {
 	this->isOn = isOn;
-	String Body = "0";
+	String Body = FreeAtHomeESPapi::VALUE_0;
 	if (isOn)
 	{
-		Body = "1";
+		Body = FreeAtHomeESPapi::VALUE_1;
 	}
-	EnqueDataPoint(FreeAtHomeESPapi::KEY_CHANEL0, FreeAtHomeESPapi::KEY_ODP0000, Body);
-	this->NotifyCallback(FAHESPAPI_EVENT::FAHESPAPI_ON_DEVICE_EVENT, this->FahDevice, FreeAtHomeESPapi::KEY_CHANEL0.c_str(), String(F("ON")).c_str(), (void*)isOn);
+	EnqueDataPoint(FreeAtHomeESPapi::GetChannelString(0), FreeAtHomeESPapi::GetODPString(0), Body);
+	this->NotifyCallback(FAHESPAPI_EVENT::FAHESPAPI_ON_DEVICE_EVENT, this->FahDevice, FreeAtHomeESPapi::GetChannelString(0).c_str(), String(F("ON")).c_str(), (void*)isOn);
 }
 
 FahESPSwitchDevice::~FahESPSwitchDevice()
@@ -54,11 +54,11 @@ FahESPSwitchDevice::~FahESPSwitchDevice()
 void FahESPSwitchDevice::NotifyFahDataPoint(const String& strChannel, const String& strDataPoint, const String& strValue, const bool& isScene)
 {
 	//DEBUG_P("VDN:");	DEBUG_P(strChannel); DEBUG_P("."); DEBUG_P(strDataPoint); DEBUG_P("=");	DEBUG_PL(strValue);
-	if (strChannel == FreeAtHomeESPapi::KEY_CHANEL0)
+	if (strChannel == FreeAtHomeESPapi::GetChannelString(0))
 	{
-		if (strDataPoint == FreeAtHomeESPapi::KEY_IDP0000 || (isScene && strDataPoint == FreeAtHomeESPapi::KEY_ODP0000))
+		if (strDataPoint == FreeAtHomeESPapi::GetIDPString(0) || (isScene && strDataPoint == FreeAtHomeESPapi::GetODPString(0)))
 		{
-			if (strValue == "0")
+			if (strValue == FreeAtHomeESPapi::VALUE_0)
 			{
 				SetState(false);
 			}

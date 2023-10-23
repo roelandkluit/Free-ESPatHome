@@ -2,8 +2,8 @@
 *
 * Title			    : Free-ESPatHome
 * Description:      : Library that implements the Busch-Jeager / ABB Free@Home API for ESP8266 and ESP32.
-* Version		    : v 0.2
-* Last updated      : 2023.10.20
+* Version		    : v 0.3
+* Last updated      : 2023.10.23
 * Target		    : ESP32, ESP8266, ESP8285
 * Author            : Roeland Kluit
 * Web               : https://github.com/roelandkluit/Free-ESPatHome
@@ -28,11 +28,12 @@
 #include "FahESPDevice.h"
 #include "FahSysAPInfo.h"
 
-class FahESPDevice;
 class FahSysAPInfo;
 
 //ESP Device Childs are defined as classes here, include is done in CPP!
+class FahESPDevice;
 class FahESPSwitchDevice;
+class FahESPWeatherStation;
 
 class FreeAtHomeESPapi : public FahEventEnabledClass
 {
@@ -45,11 +46,15 @@ public:
 	bool ConnectToSysAP(const String& SysAPHostname, const String& AuthorizationHeader, const bool& useSSL);
 	bool ConnectToSysAP(const String& SysAPHostname, const String& Username, const String& Password, const bool& useSSL);
 	bool process();
+	static String GetIDPString(const uint8_t Number);
+	static String GetChannelString(const uint8_t Number);
+	static String GetODPString(const uint8_t Number);
 	//void EmulateGotJsonData(String& JSONDATA);
 	static uint64_t StringDevToU64(const String& DeviceID);
 	static void U64toStringDev(const uint64_t number, String& stringref);
 	static String U64toString(const uint64_t number);
 	FahESPSwitchDevice* CreateSwitchDevice(const String& SerialNr, const String& DisplayName, const uint16_t& timeout);
+	FahESPWeatherStation* CreateWeatherStation(const String& SerialNr, const String& DisplayName, const uint16_t& timeout);
 	FahESPDevice* CreateDevice(const String& SerialNr, const String& deviceType, const String& DisplayName, const uint16_t& timeout);	
 	static String ConstructDeviceRegistrationURI(const String& SerialNr);
 	static String ConstructDeviceRegistrationBody(const String& DeviceType, const String& DisplayName, const uint16_t& Timeout);
@@ -57,12 +62,6 @@ public:
 	static String ConstructDeviceDataPointNotificationURI(const String& fulldatapoint);
 	static bool GetStringToken(String& from, String& to, uint8_t index, char separator);
 	bool RemoveDevice(FahESPDevice* Device);
-	static const String KEY_ODP0000;
-	static const String KEY_ODP0001;
-	static const String KEY_IDP0000;
-	static const String KEY_IDP0001;
-	static const String KEY_CHANEL0;
-	static const String KEY_CHANEL1;
 	static const String KEY_ROOT;
 	static const String KEY_DATAPOINTS;
 	static const String KEY_CHANNELS;
@@ -71,6 +70,9 @@ public:
 	static const String KEY_VALUE;
 	static const String KEY_DEVICES;
 	static const String KEY_SCENESTRIGGERED;
+	static const String VALUE_0;
+	static const String VALUE_1;
+	static const char KEY_DATAPOINT_SEPERATOR = '/';
 private:
 	enum httpClientSessionStatus:uint8_t
 	{
@@ -106,6 +108,4 @@ private:
 	void ProcessJsonDataPoints(JsonObject& jsonDataPoints);
 	void ProcessJsonSceneTrigger(JsonObject& jsonSceneTrigger);
 	bool ProcessJsonNewDevice(JsonObject& jsonDevices, uint64_t* hexDeviceOut);
-	const char KEY_DATAPOINT_SEPERATOR = '/';
-	//const unsigned int  = 8000;
 };

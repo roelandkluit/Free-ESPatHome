@@ -2,8 +2,8 @@
 *
 * Title			    : Free-ESPatHome
 * Description:      : Library that implements the Busch-Jeager / ABB Free@Home API for ESP8266 and ESP32.
-* Version		    : v 0.2
-* Last updated      : 2023.10.20
+* Version		    : v 0.3
+* Last updated      : 2023.10.23
 * Target		    : ESP32, ESP8266, ESP8285
 * Author            : Roeland Kluit
 * Web               : https://github.com/roelandkluit/Free-ESPatHome
@@ -13,6 +13,7 @@
 #include "FreeAtHomeESPapi.h"
 #include "FahESPSwitchDevice.h"
 #include <base64.h>
+#include "FahESPWeatherStation.h"
 
 const String FreeAtHomeESPapi::KEY_ROOT = "00000000-0000-0000-0000-000000000000";
 const String FreeAtHomeESPapi::KEY_DATAPOINTS = "datapoints";
@@ -22,12 +23,29 @@ const String FreeAtHomeESPapi::KEY_INPUTS = "inputs";
 const String FreeAtHomeESPapi::KEY_VALUE = "value";
 const String FreeAtHomeESPapi::KEY_DEVICES = "devices";
 const String FreeAtHomeESPapi::KEY_SCENESTRIGGERED = "scenesTriggered";
-const String FreeAtHomeESPapi::KEY_ODP0000 = "odp0000";
-const String FreeAtHomeESPapi::KEY_ODP0001 = "odp0001";
-const String FreeAtHomeESPapi::KEY_IDP0000 = "idp0000";
-const String FreeAtHomeESPapi::KEY_IDP0001 = "idp0001";
-const String FreeAtHomeESPapi::KEY_CHANEL0 = "ch0000";
-const String FreeAtHomeESPapi::KEY_CHANEL1 = "ch0001";
+const String FreeAtHomeESPapi::VALUE_0 = "0";
+const String FreeAtHomeESPapi::VALUE_1 = "1";
+
+String FreeAtHomeESPapi::GetIDPString(const uint8_t Number)
+{
+	String hexNr = String(Number, HEX);
+	hexNr.toUpperCase();
+	return String(F("idp0000")).substring(0, 7 - hexNr.length()) + hexNr;
+}
+
+String FreeAtHomeESPapi::GetChannelString(const uint8_t Number)
+{
+	String hexNr = String(Number, HEX);
+	hexNr.toUpperCase();
+	return String(F("ch0000")).substring(0, 6 - hexNr.length()) + hexNr;
+}
+
+String FreeAtHomeESPapi::GetODPString(const uint8_t Number)
+{
+	String hexNr = String(Number, HEX);
+	hexNr.toUpperCase();
+	return String(F("odp0000")).substring(0, 7 - hexNr.length()) + hexNr;
+}
 
 uint64_t FreeAtHomeESPapi::StringDevToU64(const String& DeviceID)
 {
@@ -112,6 +130,11 @@ FahESPSwitchDevice* FreeAtHomeESPapi::CreateSwitchDevice(const String& SerialNr,
 	return (FahESPSwitchDevice*)CreateDevice(SerialNr, FahESPSwitchDevice::ConstStringDeviceType, DisplayName, timeout);
 }
 
+FahESPWeatherStation* FreeAtHomeESPapi::CreateWeatherStation(const String& SerialNr, const String& DisplayName, const uint16_t& timeout)
+{
+	return (FahESPWeatherStation*)CreateDevice(SerialNr, FahESPWeatherStation::ConstStringDeviceType, DisplayName, timeout);
+}
+
 FahESPDevice* FreeAtHomeESPapi::CreateDevice(const String& SerialNr, const String& deviceType, const String& DisplayName, const uint16_t& timeout)
 {
 	if (!RegisterFahEspDevice(NULL))
@@ -143,6 +166,10 @@ FahESPDevice* FreeAtHomeESPapi::CreateDevice(const String& SerialNr, const Strin
 		if (deviceType == FahESPSwitchDevice::ConstStringDeviceType)
 		{
 			outDevice = new FahESPSwitchDevice(OutFahID, SerialNr, timeout, this, this->SysApInfo);
+		}
+		else if (deviceType == FahESPWeatherStation::ConstStringDeviceType)
+		{
+			outDevice = new FahESPWeatherStation(OutFahID, SerialNr, timeout, this, this->SysApInfo);
 		}
 		else
 		{
@@ -376,31 +403,31 @@ bool FreeAtHomeESPapi::ProcessJsonNewDevice(JsonObject& jsonDevices, uint64_t* h
 
 String FreeAtHomeESPapi::ConstructDeviceRegistrationURI(const String& SerialNr)
 {
-	String URI = String(F("/fhapi/v1/api/rest/virtualdevice/")) + KEY_ROOT + "/" + SerialNr;
+	String URI = String(F("/fhapi/v1/api/rest/virtualdevice/")) + KEY_ROOT + String(F("/")) + SerialNr;
 	return URI;
 }
 
 String FreeAtHomeESPapi::ConstructDeviceDataPointNotificationURI(const String& deviceFaHID, const String& channel, const String& datapoint)
 {
-	String URI = ConstructDeviceDataPointNotificationURI(deviceFaHID + "." + channel + "." + datapoint);
+	String URI = ConstructDeviceDataPointNotificationURI(deviceFaHID + String(F(".")) + channel + String(F(".")) + datapoint);
 	return URI;
 }
 
 String FreeAtHomeESPapi::ConstructDeviceDataPointNotificationURI(const String& fulldatapoint)
 {
-	String URI = String(F("/fhapi/v1/api/rest/datapoint/")) + KEY_ROOT + "/" + fulldatapoint;
+	String URI = String(F("/fhapi/v1/api/rest/datapoint/")) + KEY_ROOT + String(F("/")) + fulldatapoint;
 	return URI;
 }
 
 String FreeAtHomeESPapi::ConstructDeviceRegistrationBody(const String& DeviceType, const String &DisplayName, const uint16_t& Timeout)
 {
-	String jsonStringTimeout = String(F("\"ttl\":\"")) + String(Timeout) + "\"";
+	String jsonStringTimeout = String(F("\"ttl\":\"")) + String(Timeout) + String(F("\""));
 	String jsonStringDisplayName = "";
 	if (DisplayName.length() > 0)
 	{
-		jsonStringDisplayName = String(F(",\"displayname\":\"")) + DisplayName + "\"";
+		jsonStringDisplayName = String(F(",\"displayname\":\"")) + DisplayName + String(F("\""));
 	}
-	String HTTPPostData = String(F("{\"type\":\"")) + DeviceType + String(F("\",\"properties\":{")) + jsonStringTimeout + jsonStringDisplayName + "}}";
+	String HTTPPostData = String(F("{\"type\":\"")) + DeviceType + String(F("\",\"properties\":{")) + jsonStringTimeout + jsonStringDisplayName + String(F("}}"));
 	return HTTPPostData;
 }
 

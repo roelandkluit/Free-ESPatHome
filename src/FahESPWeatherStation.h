@@ -27,15 +27,15 @@ public:
 	void SetBrightnessLevelWM2(const uint16_t &level);
 	void SetBrightnessLevelByAnalogSensor(const uint8_t &Pin);
 	void SetBrightnessLevelLux(const uint16_t &level);
-	void SetRainInformation(const double &amount_of_rain);
-	void SetTemperatureLevel(const double &level);
+	void SetRainInformation(const float &amount_of_rain);
+	void SetTemperatureLevel(const float &level);
 	void SetWindSpeed(const uint8_t &speedBaufort, const float &speedMS);
 	void SetWindSpeedBeaufort(const uint8_t &speedBaufort);
 	void SetWindGustSpeed(const float &speedMS);
 private:
-	double lvRain = -1;
-	double lvTemperature = 0;
-	uint16_t lvBrightness = 0;
-	uint8_t WindSpeedMS = 0;
-	uint8_t uWindSpeedBeaufort = 0;
+	float lvRain = -1;
+	float lvTemperature = -60;
+	uint16_t lvBrightness = 0xFFFF;
+	float WindSpeedMS = -1;
+	uint8_t uWindSpeedBeaufort = 0xFF;
 };

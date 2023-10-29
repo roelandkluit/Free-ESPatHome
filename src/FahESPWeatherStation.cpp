@@ -60,7 +60,7 @@ void FahESPWeatherStation::SetBrightnessLevelLux(const uint16_t &level)
 	}
 }
 
-void FahESPWeatherStation::SetRainInformation(const double &amount_of_rain)
+void FahESPWeatherStation::SetRainInformation(const float &amount_of_rain)
 {
 	if (lvRain == amount_of_rain)
 		return;
@@ -83,7 +83,7 @@ void FahESPWeatherStation::SetRainInformation(const double &amount_of_rain)
 	}
 }
 
-void FahESPWeatherStation::SetTemperatureLevel(const double &MessuredTemp)
+void FahESPWeatherStation::SetTemperatureLevel(const float &MessuredTemp)
 {
 	if (lvTemperature == MessuredTemp)
 		return;

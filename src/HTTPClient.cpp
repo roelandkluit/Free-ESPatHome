@@ -213,24 +213,26 @@ void HTTPClient::abort()
 
 bool HTTPClient::Request(const String& HTTPCommand, const String& URL, const String& PostData)
 {
-    if(this->state == HTTPCLIENT_STATE::HTTPCLIENT_STATE_CONNECTED)
+    if (this->state == HTTPCLIENT_STATE::HTTPCLIENT_STATE_CONNECTED)
     {
-    	String HTTPrequestPacket = HTTPCommand + " " + URL + F(" HTTP/1.1\r\nConnection: Close\r\n");
+        String HTTPrequestPacket = HTTPCommand + " " + URL + F(" HTTP/1.1\r\nConnection: Close\r\n");
 
-        if(PostData.length() != 0)
+        if (PostData.length() != 0)
         {
             String slen = String(PostData.length());
-            HTTPrequestPacket += String(F("Content-Length: ")) + slen + "\r\n";
+            HTTPrequestPacket += String(F("Content-Length: ")) + slen + String(F("\r\n"));
         }
 
         HTTPrequestPacket += AdditionalHeaders;
 
-        if(PostData.length() != 0)
-            HTTPrequestPacket += "\r\n" + PostData;
+        if (PostData.length() != 0)
+            HTTPrequestPacket += String(F("\r\n")) + PostData;
+        else
+            HTTPrequestPacket += String(F("\r\n"));
 
-        //DEBUG_PL(HTTPrequestPacket);
-        size_t ret = client->write(HTTPrequestPacket.c_str());        
-        if(ret == HTTPrequestPacket.length())
+        DEBUG_PL(HTTPrequestPacket);
+        size_t ret = client->write(HTTPrequestPacket.c_str());
+        if (ret == HTTPrequestPacket.length())
         {
             state = HTTPCLIENT_STATE::HTTPCLIENT_STATE_REQUESTED;
             return true;
@@ -239,7 +241,7 @@ bool HTTPClient::Request(const String& HTTPCommand, const String& URL, const Str
         {
             client->stop();
         }
-    }    
+    }
     return false;
 }
 

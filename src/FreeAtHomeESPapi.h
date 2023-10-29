@@ -2,8 +2,8 @@
 *
 * Title			    : Free-ESPatHome
 * Description:      : Library that implements the Busch-Jeager / ABB Free@Home API for ESP8266 and ESP32.
-* Version		    : v 0.3
-* Last updated      : 2023.10.23
+* Version		    : v 0.4
+* Last updated      : 2023.10.29
 * Target		    : ESP32, ESP8266, ESP8285
 * Author            : Roeland Kluit
 * Web               : https://github.com/roelandkluit/Free-ESPatHome
@@ -38,18 +38,20 @@ class FahESPWeatherStation;
 class FreeAtHomeESPapi : public FahEventEnabledClass
 {
 public:
+	static const uint64_t SYSAP_FAH_ID = 0xABB700000000;
 	static const uint8_t FAHESP_VERSION_MAJOR = 0;
-	static const uint8_t FAHESP_VERSION_MINOR = 2;
+	static const uint8_t FAHESP_VERSION_MINOR = 4;
 	static String Version() { return String(FAHESP_VERSION_MAJOR) + "." + String(FAHESP_VERSION_MINOR) + String(F(" - Roeland Kluit")); }
 	FreeAtHomeESPapi();
 	~FreeAtHomeESPapi();
 	bool ConnectToSysAP(const String& SysAPHostname, const String& AuthorizationHeader, const bool& useSSL);
 	bool ConnectToSysAP(const String& SysAPHostname, const String& Username, const String& Password, const bool& useSSL);
 	bool process();
-	static String GetIDPString(const uint8_t Number);
-	static String GetChannelString(const uint8_t Number);
-	static String GetODPString(const uint8_t Number);
-	//void EmulateGotJsonData(String& JSONDATA);
+	bool isNightForSysAp();
+	static bool MatchChannelDataPoint(const char* ptrChannel, const char* ptrDataPoint, const uint8_t& Channel, const uint8_t& Datapoint, const bool& isInputDataPoint);
+	static String GetIDPString(const uint8_t &Number);
+	static String GetChannelString(const uint8_t &Number);
+	static String GetODPString(const uint8_t &Number);	
 	static uint64_t StringDevToU64(const String& DeviceID);
 	static void U64toStringDev(const uint64_t number, String& stringref);
 	static String U64toString(const uint64_t number);
@@ -98,6 +100,7 @@ private:
 	WebSocketClient* ws = NULL;
 	FahESPDevice* EspDevices[MAX_ESP_CREATED_DEVICES] = { NULL };
 	uint8_t EspDevicesCount;
+	bool bNightActuatorForSysAp = false;
 	bool RegisterFahEspDevice(FahESPDevice* Device);
 	bool ProcessJsonData(String& recievedData, JsonProcessFilter filter, uint64_t* hexDeviceOut);	
 	bool isCallbackNeededForHexDevice(uint64_t hexDevice);
@@ -108,4 +111,5 @@ private:
 	void ProcessJsonDataPoints(JsonObject& jsonDataPoints);
 	void ProcessJsonSceneTrigger(JsonObject& jsonSceneTrigger);
 	bool ProcessJsonNewDevice(JsonObject& jsonDevices, uint64_t* hexDeviceOut);
+	static String GetPadString(const String& refString, const uint8_t &size, const char& padChar);
 };

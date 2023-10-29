@@ -2,8 +2,8 @@
 *
 * Title			    : Free-ESPatHome
 * Description:      : Library that implements the Busch-Jeager / ABB Free@Home API for ESP8266 and ESP32.
-* Version		    : v 0.3
-* Last updated      : 2023.10.23
+* Version		    : v 0.4
+* Last updated      : 2023.10.29
 * Target		    : ESP32, ESP8266, ESP8285
 * Author            : Roeland Kluit
 * Web               : https://github.com/roelandkluit/Free-ESPatHome
@@ -32,20 +32,20 @@ void FahESPWeatherStation::NotifyFahDataPoint(const String& strChannel, const St
 	//No events needed
 }
 
-void FahESPWeatherStation::SetBrightnessLevelWM2(uint16_t level)
+void FahESPWeatherStation::SetBrightnessLevelWM2(const uint16_t &level)
 {
 	uint16_t ilevel = level * 63;
 	SetBrightnessLevelLux(ilevel);
 }
 
-void FahESPWeatherStation::SetBrightnessLevelByAnalogSensor(uint8_t Pin)
+void FahESPWeatherStation::SetBrightnessLevelByAnalogSensor(const uint8_t &Pin)
 {
 	uint16_t val = analogRead(Pin);
 	val = val * ((val / 10) + 1);
 	SetBrightnessLevelLux(val);
 }
 
-void FahESPWeatherStation::SetBrightnessLevelLux(uint16_t level)
+void FahESPWeatherStation::SetBrightnessLevelLux(const uint16_t &level)
 {
 	if (level == lvBrightness)
 		return;
@@ -60,7 +60,7 @@ void FahESPWeatherStation::SetBrightnessLevelLux(uint16_t level)
 	}
 }
 
-void FahESPWeatherStation::SetRainInformation(double amount_of_rain)
+void FahESPWeatherStation::SetRainInformation(const double &amount_of_rain)
 {
 	if (lvRain == amount_of_rain)
 		return;
@@ -83,7 +83,7 @@ void FahESPWeatherStation::SetRainInformation(double amount_of_rain)
 	}
 }
 
-void FahESPWeatherStation::SetTemperatureLevel(double MessuredTemp)
+void FahESPWeatherStation::SetTemperatureLevel(const double &MessuredTemp)
 {
 	if (lvTemperature == MessuredTemp)
 		return;
@@ -106,33 +106,43 @@ void FahESPWeatherStation::SetTemperatureLevel(double MessuredTemp)
 	}
 }
 
-void FahESPWeatherStation::SetWindSpeed(uint8_t speedBaufort, uint8_t speedMS)
+
+void FahESPWeatherStation::SetWindSpeed(const uint8_t& speedBeaufort, const float& SpeedGustsMS)
 {
-	if (lvWindBeaufort != speedBaufort)
+	SetWindSpeedBeaufort(speedBeaufort);
+	SetWindGustSpeed(SpeedGustsMS);
+}
+
+void FahESPWeatherStation::SetWindSpeedBeaufort(const uint8_t& SpeedBeaufort)
+{
+	if (uWindSpeedBeaufort != SpeedBeaufort)
 	{
 		//Alarm
 		String Body1 = FreeAtHomeESPapi::VALUE_0;
-		if (speedBaufort > 3)
+		if (SpeedBeaufort > 3)
 		{
 			Body1 = FreeAtHomeESPapi::VALUE_1;
 		}
 		EnqueDataPoint(FreeAtHomeESPapi::GetChannelString(3), FreeAtHomeESPapi::GetODPString(0), Body1);
 
 		//Speed
-		String Body2 = String(speedBaufort);
+		String Body2 = String(SpeedBeaufort);
 		if (EnqueDataPoint(FreeAtHomeESPapi::GetChannelString(3), FreeAtHomeESPapi::GetODPString(1), Body2))
 		{
-			lvWindBeaufort = speedBaufort;
+			uWindSpeedBeaufort = SpeedBeaufort;
 		}
 	}
+}
 
-	if (lvWindSpeed != speedMS)
-	{		
+void FahESPWeatherStation::SetWindGustSpeed(const float& SpeedGustsMS)
+{
+	if (WindSpeedMS != SpeedGustsMS)
+	{
 		//Speed M/S
-		String Body3 = String(speedMS);
+		String Body3 = String(SpeedGustsMS, 2);
 		if (EnqueDataPoint(FreeAtHomeESPapi::GetChannelString(3), FreeAtHomeESPapi::GetODPString(3), Body3))
 		{
-			lvWindSpeed = speedMS;
+			WindSpeedMS = SpeedGustsMS;
 		}
 	}
 }

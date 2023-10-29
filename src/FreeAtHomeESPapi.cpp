@@ -2,8 +2,8 @@
 *
 * Title			    : Free-ESPatHome
 * Description:      : Library that implements the Busch-Jeager / ABB Free@Home API for ESP8266 and ESP32.
-* Version		    : v 0.3
-* Last updated      : 2023.10.23
+* Version		    : v 0.4
+* Last updated      : 2023.10.29
 * Target		    : ESP32, ESP8266, ESP8285
 * Author            : Roeland Kluit
 * Web               : https://github.com/roelandkluit/Free-ESPatHome
@@ -26,21 +26,21 @@ const String FreeAtHomeESPapi::KEY_SCENESTRIGGERED = "scenesTriggered";
 const String FreeAtHomeESPapi::VALUE_0 = "0";
 const String FreeAtHomeESPapi::VALUE_1 = "1";
 
-String FreeAtHomeESPapi::GetIDPString(const uint8_t Number)
+String FreeAtHomeESPapi::GetIDPString(const uint8_t &Number)
 {
 	String hexNr = String(Number, HEX);
 	hexNr.toUpperCase();
 	return String(F("idp0000")).substring(0, 7 - hexNr.length()) + hexNr;
 }
 
-String FreeAtHomeESPapi::GetChannelString(const uint8_t Number)
+String FreeAtHomeESPapi::GetChannelString(const uint8_t &Number)
 {
 	String hexNr = String(Number, HEX);
 	hexNr.toUpperCase();
 	return String(F("ch0000")).substring(0, 6 - hexNr.length()) + hexNr;
 }
 
-String FreeAtHomeESPapi::GetODPString(const uint8_t Number)
+String FreeAtHomeESPapi::GetODPString(const uint8_t &Number)
 {
 	String hexNr = String(Number, HEX);
 	hexNr.toUpperCase();
@@ -66,12 +66,32 @@ String FreeAtHomeESPapi::U64toString(const uint64_t number)
 	return stringout;
 }
 
+String FreeAtHomeESPapi::GetPadString(const String& refString, const uint8_t& size, const char& padChar)
+{
+	if (refString.length() < size)
+	{
+		uint8_t padCharsCount = size - refString.length();
+		String pad = "";
+		pad.reserve(padCharsCount);
+		while (padCharsCount > 0)
+		{
+			pad += padChar;
+			padCharsCount--;
+		}
+		return pad;
+	}
+	return "";
+}
+
 void FreeAtHomeESPapi::U64toStringDev(const uint64_t number, String& stringref)
 {
 	long p1 = number >> 24;
 	long p2 = number & 0xFFFFFF;
 
-	stringref = String(p1, HEX) + String(p2, HEX);
+	String ps1 = String(p1, HEX);
+	String ps2 = String(p2, HEX);
+
+	stringref = GetPadString(ps1, 6, '0') + ps1 + GetPadString(ps2, 6, '0') + ps2;
 	stringref.toUpperCase();
 }
 
@@ -493,10 +513,42 @@ void FreeAtHomeESPapi::ProcessjsonDataPointValueEntry(JsonObject& jsonDataPoint,
 	}
 }
 
+bool FreeAtHomeESPapi::isNightForSysAp()
+{
+	return bNightActuatorForSysAp;
+}
+
+bool FreeAtHomeESPapi::MatchChannelDataPoint(const char* ptrChannel, const char* ptrDataPoint, const uint8_t& Channel, const uint8_t& Datapoint, const bool &isInputDataPoint)
+{
+	if (ptrChannel == NULL || ptrDataPoint == NULL)
+		return false;
+
+	if(isInputDataPoint)
+		return ((strcmp(ptrChannel, GetChannelString(Channel).c_str()) == 0) && (strcmp(ptrDataPoint, GetIDPString(Datapoint).c_str()) == 0));
+	else
+		return ((strcmp(ptrChannel, GetChannelString(Channel).c_str()) == 0) && (strcmp(ptrDataPoint, GetODPString(Datapoint).c_str()) == 0));
+}
+
 void FreeAtHomeESPapi::NotifyCallbacks(FAHESPAPI_EVENT Event, uint64_t FAHID, const char* ptrChannel, const char* ptrDataPoint, void* ptrValue, const bool& isScene)
 {
 	if (Event == FAHESPAPI_EVENT::FAHESPAPI_ON_DATAPOINT)
 	{
+		if (SYSAP_FAH_ID == FAHID)
+		{
+			if(MatchChannelDataPoint(ptrChannel, ptrDataPoint, 0, 0, false))
+			{
+				bNightActuatorForSysAp = (String((const char*)ptrValue) == "1");
+				/*for (uint8_t i = 0; i < 10; i++)
+				{
+					if (EspDevices[i] != NULL)
+					{
+						EspDevices[i]->DayNightToggle(isNight);
+					}
+				}*/
+				return;
+			}
+		}
+
 		for (uint8_t i = 0; i < 10; i++)
 		{
 			if (EspDevices[i] != NULL)
@@ -513,6 +565,9 @@ void FreeAtHomeESPapi::NotifyCallbacks(FAHESPAPI_EVENT Event, uint64_t FAHID, co
 
 bool FreeAtHomeESPapi::isCallbackNeededForHexDevice(uint64_t hexDevice)
 {
+	if (hexDevice == SYSAP_FAH_ID)
+		return true;
+
 	for (uint8_t i = 0; i < MAX_ESP_CREATED_DEVICES; i++)
 	{
 		if (EspDevices[i] != NULL)

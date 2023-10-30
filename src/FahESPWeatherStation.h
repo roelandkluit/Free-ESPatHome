@@ -26,12 +26,12 @@ public:
 	void NotifyFahDataPoint(const String& strChannel, const String& strDataPoint, const String& strValue, const bool& isScene);
 	void SetBrightnessLevelWM2(const uint16_t &level);
 	void SetBrightnessLevelByAnalogSensor(const uint8_t &Pin);
-	void SetBrightnessLevelLux(const uint16_t &level);
-	void SetRainInformation(const float &amount_of_rain);
-	void SetTemperatureLevel(const float &level);
-	void SetWindSpeed(const uint8_t &speedBaufort, const float &speedMS);
-	void SetWindSpeedBeaufort(const uint8_t &speedBaufort);
-	void SetWindGustSpeed(const float &speedMS);
+	void SetBrightnessLevelLux(const uint16_t& level, const bool& forceupdate = false);
+	void SetRainInformation(const float& amount_of_rain, const bool& forceupdate = false);
+	void SetTemperatureLevel(const float& MessuredTemp, const bool& forceupdate = false);
+	void SetWindSpeed(const uint8_t& speedBeaufort, const float& SpeedGustsMS, const bool& forceupdate = false);
+	void SetWindSpeedBeaufort(const uint8_t& SpeedBeaufort, const bool& forceupdate = false);
+	void SetWindGustSpeed(const float& SpeedGustsMS, const bool& forceupdate = false);
 private:
 	float lvRain = -1;
 	float lvTemperature = -60;

@@ -11,6 +11,7 @@
 *
 **************************************************************************************************************/
 #include "FahESPWeatherStation.h"
+#include <stdint-gcc.h>
 
 const String FahESPWeatherStation::ConstStringDeviceType = "WeatherStation";
 
@@ -45,9 +46,9 @@ void FahESPWeatherStation::SetBrightnessLevelByAnalogSensor(const uint8_t &Pin)
 	SetBrightnessLevelLux(val);
 }
 
-void FahESPWeatherStation::SetBrightnessLevelLux(const uint16_t &level)
+void FahESPWeatherStation::SetBrightnessLevelLux(const uint16_t &level, const bool &forceupdate)
 {
-	if (level == lvBrightness)
+	if (!forceupdate && level == lvBrightness)
 		return;
 	else
 	{
@@ -60,9 +61,9 @@ void FahESPWeatherStation::SetBrightnessLevelLux(const uint16_t &level)
 	}
 }
 
-void FahESPWeatherStation::SetRainInformation(const float &amount_of_rain)
+void FahESPWeatherStation::SetRainInformation(const float &amount_of_rain, const bool& forceupdate)
 {
-	if (lvRain == amount_of_rain)
+	if (!forceupdate && lvRain == amount_of_rain)
 		return;
 	else
 	{
@@ -83,9 +84,9 @@ void FahESPWeatherStation::SetRainInformation(const float &amount_of_rain)
 	}
 }
 
-void FahESPWeatherStation::SetTemperatureLevel(const float &MessuredTemp)
+void FahESPWeatherStation::SetTemperatureLevel(const float &MessuredTemp, const bool& forceupdate)
 {
-	if (lvTemperature == MessuredTemp)
+	if (!forceupdate && lvTemperature == MessuredTemp)
 		return;
 	else
 	{
@@ -106,16 +107,15 @@ void FahESPWeatherStation::SetTemperatureLevel(const float &MessuredTemp)
 	}
 }
 
-
-void FahESPWeatherStation::SetWindSpeed(const uint8_t& speedBeaufort, const float& SpeedGustsMS)
+void FahESPWeatherStation::SetWindSpeed(const uint8_t& speedBeaufort, const float& SpeedGustsMS, const bool& forceupdate)
 {
-	SetWindSpeedBeaufort(speedBeaufort);
-	SetWindGustSpeed(SpeedGustsMS);
+	SetWindSpeedBeaufort(speedBeaufort, forceupdate);
+	SetWindGustSpeed(SpeedGustsMS, forceupdate);
 }
 
-void FahESPWeatherStation::SetWindSpeedBeaufort(const uint8_t& SpeedBeaufort)
+void FahESPWeatherStation::SetWindSpeedBeaufort(const uint8_t& SpeedBeaufort, const bool& forceupdate)
 {
-	if (uWindSpeedBeaufort != SpeedBeaufort)
+	if (!forceupdate && uWindSpeedBeaufort != SpeedBeaufort)
 	{
 		//Alarm
 		String Body1 = FreeAtHomeESPapi::VALUE_0;
@@ -134,9 +134,9 @@ void FahESPWeatherStation::SetWindSpeedBeaufort(const uint8_t& SpeedBeaufort)
 	}
 }
 
-void FahESPWeatherStation::SetWindGustSpeed(const float& SpeedGustsMS)
+void FahESPWeatherStation::SetWindGustSpeed(const float& SpeedGustsMS, const bool& forceupdate)
 {
-	if (WindSpeedMS != SpeedGustsMS)
+	if (!forceupdate && WindSpeedMS != SpeedGustsMS)
 	{
 		//Speed M/S
 		String Body3 = String(SpeedGustsMS, 2);

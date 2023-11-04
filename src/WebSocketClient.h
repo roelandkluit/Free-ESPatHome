@@ -44,7 +44,7 @@ private:
 
     bool websocketEstablished = false;
 
-	uint16_t LastSecondsInterval = 0;
+	unsigned long LastWaitInterval = 0;
 
 };
 

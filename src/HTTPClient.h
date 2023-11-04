@@ -2,8 +2,8 @@
 *
 * Title			    : Free-ESPatHome
 * Description:      : Library that implements the Busch-Jeager / ABB Free@Home API for ESP8266 and ESP32.
-* Version		    : v 0.4
-* Last updated      : 2023.10.29
+* Version		    : v 0.5
+* Last updated      : 2023.11.04
 * Target		    : ESP32, ESP8266, ESP8285
 * Author            : Roeland Kluit
 * Web               : https://github.com/roelandkluit/Free-ESPatHome
@@ -42,9 +42,10 @@ private:
     String ReturnBody = "";
     uint16_t LastResult = 0;
     void ClearVariables();
-    /* data */
+    unsigned long SessionStartMillis = 0;
 public:
     HTTPClient(const bool &secure);
+    unsigned long GetSessionStartMillis() { return SessionStartMillis; };
     bool Connect(const String &RemoteHost, const unsigned int &port);    
     ~HTTPClient();
     bool Request(const String &HTTPCommand, const String &URL, const String &PostData);

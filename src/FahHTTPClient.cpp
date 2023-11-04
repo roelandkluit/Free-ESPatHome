@@ -2,8 +2,8 @@
 *
 * Title			    : Free-ESPatHome
 * Description:      : Library that implements the Busch-Jeager / ABB Free@Home API for ESP8266 and ESP32.
-* Version		    : v 0.4
-* Last updated      : 2023.10.29
+* Version		    : v 0.5
+* Last updated      : 2023.11.04
 * Target		    : ESP32, ESP8266, ESP8285
 * Author            : Roeland Kluit
 * Web               : https://github.com/roelandkluit/Free-ESPatHome
@@ -19,11 +19,7 @@ HTTPREQUEST_STATUS FahHTTPClient::GetAsyncStatus()
 
 void FahHTTPClient::ReleaseAsync()
 {
-	if (this->GetState() >= HTTPCLIENT_STATE::HTTPCLIENT_STATE_CONNECTED)
-	{
-		this->abort();
-	}
-
+	this->abort();
 	Async_Method = "";
 	Async_URI = "";
 	Async_PostData = "";

@@ -74,6 +74,7 @@ bool WebSocketClient::connect(const String& host, const String& path, uint16_t p
 	}
 	if (!client->connect(host.c_str(), port))
 	{
+		DEBUG_PL(String(F("No connection to host")));
 		return false;
 	}
 
@@ -140,7 +141,7 @@ bool WebSocketClient::connect(const String& host, const String& path, uint16_t p
 	if (success) {
 		DEBUG_PL(F("[WS] sucessfully connected"));
         this->websocketEstablished = true;
-		this->LastSecondsInterval = Seconds();
+		this->LastWaitInterval = millis();
     }
 	else {
 		DEBUG_PL(F("[WS] could not connect"));
@@ -170,7 +171,7 @@ void WebSocketClient::send(const String& str)
 }
 
 void WebSocketClient::send(const String& str, const uint8_t& wsOpcode) {
-	DEBUG_PL(String(F("[WS] sending: ")) + str);
+	//DEBUG_PL(String(F("[WS] sending: ")) + str);
 	if (!client->connected()) {
 		DEBUG_PL(F("[WS] not connected..."));
 		return;
@@ -221,11 +222,11 @@ int WebSocketClient::timedRead() {
 
 void WebSocketClient::sendKeepAlive()
 {
-	if ((Seconds() - this->LastSecondsInterval) > WS_PING_INTERVAL_TIMEOUT)
+	if ((millis() - this->LastWaitInterval) > WS_PING_INTERVAL_TIMEOUT)
 	{
-		DEBUG_PL(F("ping"));
+		//DEBUG_PL(F("ping"));
 		send(String(F("{}")), WS_OPCODE_PING);
-		this->LastSecondsInterval = Seconds();
+		this->LastWaitInterval = millis();
 	}
 }
 

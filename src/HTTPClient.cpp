@@ -2,8 +2,8 @@
 *
 * Title			    : Free-ESPatHome
 * Description:      : Library that implements the Busch-Jeager / ABB Free@Home API for ESP8266 and ESP32.
-* Version		    : v 0.4
-* Last updated      : 2023.10.29
+* Version		    : v 0.5
+* Last updated      : 2023.11.04
 * Target		    : ESP32, ESP8266, ESP8285
 * Author            : Roeland Kluit
 * Web               : https://github.com/roelandkluit/Free-ESPatHome
@@ -39,12 +39,20 @@ bool HTTPClient::Connect(const String& RemoteHost, const unsigned int& port)
 
     ClearVariables();
 
+    //#ifdef CHECK_WIFI_CONNECTION_BEFORE_SEND
+    //    if (!WiFi.isConnected())
+    //    {
+    //        return false;
+    //    }
+    //#endif // CHECK_WIFI_CONNECTION_BEFORE_SEND
+
 	if (!client->connect(RemoteHost.c_str(), port))
     {
         DEBUG_PL(F("Connection failed"));
 		return false;
     }
 
+    SessionStartMillis = millis();
     this->state = HTTPCLIENT_STATE::HTTPCLIENT_STATE_CONNECTED;
     return true;
 }
@@ -202,7 +210,7 @@ void HTTPClient::ClearVariables()
 
 void HTTPClient::abort()
 {
-    if(this->state >= HTTPCLIENT_STATE::HTTPCLIENT_STATE_CONNECTED)
+    if(this->state >= HTTPCLIENT_STATE::HTTPCLIENT_STATE_FAILED)
     {
         //Serial.println("AbortConn");
         this->client->stop();
@@ -230,7 +238,7 @@ bool HTTPClient::Request(const String& HTTPCommand, const String& URL, const Str
         else
             HTTPrequestPacket += String(F("\r\n"));
 
-        DEBUG_PL(HTTPrequestPacket);
+        //DEBUG_PL(HTTPrequestPacket);
         size_t ret = client->write(HTTPrequestPacket.c_str());
         if (ret == HTTPrequestPacket.length())
         {

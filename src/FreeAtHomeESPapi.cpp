@@ -2,8 +2,8 @@
 *
 * Title			    : Free-ESPatHome
 * Description:      : Library that implements the Busch-Jeager / ABB Free@Home API for ESP8266 and ESP32.
-* Version		    : v 0.5
-* Last updated      : 2023.11.04
+* Version		    : v 0.6
+* Last updated      : 2023.11.06
 * Target		    : ESP32, ESP8266, ESP8285
 * Author            : Roeland Kluit
 * Web               : https://github.com/roelandkluit/Free-ESPatHome
@@ -21,6 +21,7 @@ const String FreeAtHomeESPapi::KEY_CHANNELS = "channels";
 const String FreeAtHomeESPapi::KEY_OUTPUTS = "outputs";
 const String FreeAtHomeESPapi::KEY_INPUTS = "inputs";
 const String FreeAtHomeESPapi::KEY_VALUE = "value";
+const String FreeAtHomeESPapi::KEY_VALUES = "values";
 const String FreeAtHomeESPapi::KEY_DEVICES = "devices";
 const String FreeAtHomeESPapi::KEY_SCENESTRIGGERED = "scenesTriggered";
 const String FreeAtHomeESPapi::VALUE_0 = "0";
@@ -492,7 +493,7 @@ void FreeAtHomeESPapi::ProcessJsonDataPoints(JsonObject& jsonDataPoints)
 	}
 }
 
-void FreeAtHomeESPapi::ProcessjsonDataPointValueEntry(JsonObject& jsonDataPoint, uint64_t& hexDevice, JsonString& channel, const bool& isScene)
+void FreeAtHomeESPapi::ProcessjsonDataPointValueEntry(JsonObject& jsonDataPoint, uint64_t& hexDevice, JsonString& channel, const bool& isSceneOrGetValue)
 {
 	JsonObject valueobject;
 	JsonString value;
@@ -508,7 +509,7 @@ void FreeAtHomeESPapi::ProcessjsonDataPointValueEntry(JsonObject& jsonDataPoint,
 			const char* lpCchannel = channel.c_str();
 			const char* lpCDataPoint = datapoint.key().c_str();
 			const char* lpCValue = value.c_str();
-			NotifyCallbacks(FAHESPAPI_EVENT::FAHESPAPI_ON_DATAPOINT, hexDevice, lpCchannel, lpCDataPoint, (void*)lpCValue, isScene);
+			NotifyCallbacks(FAHESPAPI_EVENT::FAHESPAPI_ON_DATAPOINT, hexDevice, lpCchannel, lpCDataPoint, (void*)lpCValue, isSceneOrGetValue);
 		}
 	}
 }
@@ -529,7 +530,7 @@ bool FreeAtHomeESPapi::MatchChannelDataPoint(const char* ptrChannel, const char*
 		return ((strcmp(ptrChannel, GetChannelString(Channel).c_str()) == 0) && (strcmp(ptrDataPoint, GetODPString(Datapoint).c_str()) == 0));
 }
 
-void FreeAtHomeESPapi::NotifyCallbacks(FAHESPAPI_EVENT Event, uint64_t FAHID, const char* ptrChannel, const char* ptrDataPoint, void* ptrValue, const bool& isScene)
+void FreeAtHomeESPapi::NotifyCallbacks(FAHESPAPI_EVENT Event, uint64_t FAHID, const char* ptrChannel, const char* ptrDataPoint, void* ptrValue, const bool& isSceneOrGetValue)
 {
 	if (Event == FAHESPAPI_EVENT::FAHESPAPI_ON_DATAPOINT)
 	{
@@ -555,7 +556,7 @@ void FreeAtHomeESPapi::NotifyCallbacks(FAHESPAPI_EVENT Event, uint64_t FAHID, co
 			{
 				if (EspDevices[i]->GetFahDeviceID() == FAHID)
 				{
-					EspDevices[i]->NotifyFahDataPoint(String(ptrChannel), String(ptrDataPoint), String((const char*)ptrValue), isScene);
+					EspDevices[i]->NotifyFahDataPoint(String(ptrChannel), String(ptrDataPoint), String((const char*)ptrValue), isSceneOrGetValue);
 				}
 			}
 		}

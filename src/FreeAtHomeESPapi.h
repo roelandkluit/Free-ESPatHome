@@ -2,8 +2,8 @@
 *
 * Title			    : Free-ESPatHome
 * Description:      : Library that implements the Busch-Jeager / ABB Free@Home API for ESP8266 and ESP32.
-* Version		    : v 0.5
-* Last updated      : 2023.11.04
+* Version		    : v 0.6
+* Last updated      : 2023.11.06
 * Target		    : ESP32, ESP8266, ESP8285
 * Author            : Roeland Kluit
 * Web               : https://github.com/roelandkluit/Free-ESPatHome
@@ -20,6 +20,7 @@
 	#endif
 #endif
 
+#include "BuildConfig.h"
 #include "FahEventEnabledClass.h"
 #include <ArduinoJson.h>
 #include <stdint.h>
@@ -40,7 +41,7 @@ class FreeAtHomeESPapi : public FahEventEnabledClass
 public:
 	static const uint64_t SYSAP_FAH_ID = 0xABB700000000;
 	static const uint8_t FAHESP_VERSION_MAJOR = 0;
-	static const uint8_t FAHESP_VERSION_MINOR = 4;
+	static const uint8_t FAHESP_VERSION_MINOR = 6;
 	static String Version() { return String(FAHESP_VERSION_MAJOR) + "." + String(FAHESP_VERSION_MINOR) + String(F(" - Roeland Kluit")); }
 	FreeAtHomeESPapi();
 	~FreeAtHomeESPapi();
@@ -70,6 +71,7 @@ public:
 	static const String KEY_OUTPUTS;
 	static const String KEY_INPUTS;
 	static const String KEY_VALUE;
+	static const String KEY_VALUES;
 	static const String KEY_DEVICES;
 	static const String KEY_SCENESTRIGGERED;
 	static const String VALUE_0;
@@ -104,12 +106,12 @@ private:
 	bool RegisterFahEspDevice(FahESPDevice* Device);
 	bool ProcessJsonData(String& recievedData, JsonProcessFilter filter, uint64_t* hexDeviceOut);	
 	bool isCallbackNeededForHexDevice(uint64_t hexDevice);
-	void ProcessjsonDataPointValueEntry(JsonObject& jsonDataPoint, uint64_t& hexDevice, JsonString& channel, const bool& isScene);
-	bool GetKeyIfExistAndGotChildren(JsonObject& rootObject, const String& LookFor, JsonObject& childRef);
-	bool GetNestedJsonObject(JsonPair& input, JsonObject& output, const String& ExpectedSubKey);
-	void NotifyCallbacks(FAHESPAPI_EVENT Event, uint64_t FAHID, const char* ptrChannel, const char* ptrDataPoint, void* ptrValue, const bool& isScene);
+	void ProcessjsonDataPointValueEntry(JsonObject& jsonDataPoint, uint64_t& hexDevice, JsonString& channel, const bool& isSceneOrGetValue);
+	void NotifyCallbacks(FAHESPAPI_EVENT Event, uint64_t FAHID, const char* ptrChannel, const char* ptrDataPoint, void* ptrValue, const bool& isSceneOrGetValue);
 	void ProcessJsonDataPoints(JsonObject& jsonDataPoints);
 	void ProcessJsonSceneTrigger(JsonObject& jsonSceneTrigger);
 	bool ProcessJsonNewDevice(JsonObject& jsonDevices, uint64_t* hexDeviceOut);
 	static String GetPadString(const String& refString, const uint8_t &size, const char& padChar);
+	static bool GetKeyIfExistAndGotChildren(JsonObject& rootObject, const String& LookFor, JsonObject& childRef);
+	static bool GetNestedJsonObject(JsonPair& input, JsonObject& output, const String& ExpectedSubKey);
 };

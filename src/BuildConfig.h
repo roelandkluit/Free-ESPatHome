@@ -2,8 +2,8 @@
 *
 * Title			    : Free-ESPatHome
 * Description:      : Library that implements the Busch-Jeager / ABB Free@Home API for ESP8266 and ESP32.
-* Version		    : v 0.5
-* Last updated      : 2023.11.04
+* Version		    : v 0.6
+* Last updated      : 2023.11.06
 * Target		    : ESP32, ESP8266, ESP8285
 * Author            : Roeland Kluit
 * Web               : https://github.com/roelandkluit/Free-ESPatHome
@@ -13,7 +13,7 @@
 
 #pragma once
 
-#define DEBUG
+//#define DEBUG
 //#define FORCE_ESP8266_SSL_OPTION_AVAILBLE
 #define MAX_ESP_CREATED_DEVICES 10
 #define WS_PING_INTERVAL_TIMEOUT	  20000
@@ -23,11 +23,12 @@
 
 //Shared function defines
 
-
 #ifdef DEBUG
 #define DEBUG_PL Serial.println
 #define DEBUG_P Serial.print
+#define DEBUG_F Serial.printf
 #else
 #define DEBUG_PL(MSG)
 #define DEBUG_P(MSG)
+#define DEBUG_F(MSG)
 #endif

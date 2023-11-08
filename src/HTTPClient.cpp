@@ -2,8 +2,8 @@
 *
 * Title			    : Free-ESPatHome
 * Description:      : Library that implements the Busch-Jeager / ABB Free@Home API for ESP8266 and ESP32.
-* Version		    : v 0.5
-* Last updated      : 2023.11.04
+* Version		    : v 0.6
+* Last updated      : 2023.11.06
 * Target		    : ESP32, ESP8266, ESP8285
 * Author            : Roeland Kluit
 * Web               : https://github.com/roelandkluit/Free-ESPatHome
@@ -156,6 +156,67 @@ bool HTTPClient::ReadHeaders(String& Key, String& Value)
         }
     }
     return false;
+}
+
+String HTTPClient::GetResponseHeaderByIndex(const uint8_t &index)
+{
+    uint8_t rowpos = 0;
+    uint16_t end_pos = 0;
+    uint16_t start_pos = 0;
+    while (true)
+    {
+        end_pos = ReturnHeaderValues.indexOf('\n', start_pos);
+        if (end_pos > 0)
+        {
+            if (rowpos == index)
+            {
+                return ReturnHeaderValues.substring(start_pos, end_pos);
+            }
+            start_pos = end_pos + 1;
+            rowpos++;
+        }
+        else
+        {
+            break;
+        }
+    }
+    return "";
+}
+
+int HTTPClient::GetResponseHeaderIndexByKey(const String& key)
+{
+    uint8_t rowpos = 0;
+    uint16_t end_pos = 0;
+    uint16_t start_pos = 0;
+    while (true)
+    {
+        end_pos = ReturnHeaderKeys.indexOf('\n', start_pos);
+        if (end_pos > 0)
+        {
+            String substring = ReturnHeaderKeys.substring(start_pos, end_pos);
+            if (substring == key)
+            {
+                //DEBUG_F("Match %i: Key: %s\r\n", rowpos, substring.c_str());
+                return rowpos;
+            }
+            start_pos = end_pos + 1;
+            rowpos++;
+        }
+        else
+        {
+            break;
+        }
+    }
+    return -1;
+}
+
+String HTTPClient::GetResponseHeaderByKey(const String& key)
+{
+    int ret = GetResponseHeaderIndexByKey(key);
+    if (ret >= 0)
+        return GetResponseHeaderByIndex(ret);
+    else
+        return "";
 }
 
 String HTTPClient::GetBody()

@@ -2,8 +2,8 @@
 *
 * Title			    : Free-ESPatHome
 * Description:      : Library that implements the Busch-Jeager / ABB Free@Home API for ESP8266 and ESP32.
-* Version		    : v 0.5
-* Last updated      : 2023.11.04
+* Version		    : v 0.6
+* Last updated      : 2023.11.06
 * Target		    : ESP32, ESP8266, ESP8285
 * Author            : Roeland Kluit
 * Web               : https://github.com/roelandkluit/Free-ESPatHome
@@ -28,7 +28,7 @@ FahESPWeatherStation::~FahESPWeatherStation()
 {
 }
 
-void FahESPWeatherStation::NotifyFahDataPoint(const String& strChannel, const String& strDataPoint, const String& strValue, const bool& isScene)
+void FahESPWeatherStation::NotifyFahDataPoint(const String& strChannel, const String& strDataPoint, const String& strValue, const bool& isSceneOrGetValue)
 {
 	//No events needed
 }
@@ -54,7 +54,7 @@ void FahESPWeatherStation::SetBrightnessLevelLux(const uint16_t &level, const bo
 	{
 		//Level
 		String Body1 = String(level);
-		if (EnqueDataPoint(FreeAtHomeESPapi::GetChannelString(0), FreeAtHomeESPapi::GetODPString(1), Body1))
+		if (EnqueSetDataPoint(FreeAtHomeESPapi::GetChannelString(0), FreeAtHomeESPapi::GetODPString(1), Body1))
 		{
 			lvBrightness = level;
 		}
@@ -73,11 +73,11 @@ void FahESPWeatherStation::SetRainInformation(const float &amount_of_rain, const
 		{
 			Body1 = FreeAtHomeESPapi::VALUE_1;
 		}
-		EnqueDataPoint(FreeAtHomeESPapi::GetChannelString(1), FreeAtHomeESPapi::GetODPString(0), Body1);
+		EnqueSetDataPoint(FreeAtHomeESPapi::GetChannelString(1), FreeAtHomeESPapi::GetODPString(0), Body1);
 
 		//Rain
 		String Body2 = String(amount_of_rain);
-		if (EnqueDataPoint(FreeAtHomeESPapi::GetChannelString(1), FreeAtHomeESPapi::GetODPString(2), Body2))
+		if (EnqueSetDataPoint(FreeAtHomeESPapi::GetChannelString(1), FreeAtHomeESPapi::GetODPString(2), Body2))
 		{
 			lvRain = amount_of_rain;
 		}
@@ -96,11 +96,11 @@ void FahESPWeatherStation::SetTemperatureLevel(const float &MessuredTemp, const 
 		{
 			Body1 = FreeAtHomeESPapi::VALUE_1;
 		}
-		EnqueDataPoint(FreeAtHomeESPapi::GetChannelString(2), FreeAtHomeESPapi::GetODPString(0), Body1);
+		EnqueSetDataPoint(FreeAtHomeESPapi::GetChannelString(2), FreeAtHomeESPapi::GetODPString(0), Body1);
 
 		//Value
 		String Body2 = String(MessuredTemp);
-		if (EnqueDataPoint(FreeAtHomeESPapi::GetChannelString(2), FreeAtHomeESPapi::GetODPString(1), Body2))
+		if (EnqueSetDataPoint(FreeAtHomeESPapi::GetChannelString(2), FreeAtHomeESPapi::GetODPString(1), Body2))
 		{
 			lvTemperature = MessuredTemp;
 		}
@@ -123,11 +123,11 @@ void FahESPWeatherStation::SetWindSpeedBeaufort(const uint8_t& SpeedBeaufort, co
 		{
 			Body1 = FreeAtHomeESPapi::VALUE_1;
 		}
-		EnqueDataPoint(FreeAtHomeESPapi::GetChannelString(3), FreeAtHomeESPapi::GetODPString(0), Body1);
+		EnqueSetDataPoint(FreeAtHomeESPapi::GetChannelString(3), FreeAtHomeESPapi::GetODPString(0), Body1);
 
 		//Speed
 		String Body2 = String(SpeedBeaufort);
-		if (EnqueDataPoint(FreeAtHomeESPapi::GetChannelString(3), FreeAtHomeESPapi::GetODPString(1), Body2))
+		if (EnqueSetDataPoint(FreeAtHomeESPapi::GetChannelString(3), FreeAtHomeESPapi::GetODPString(1), Body2))
 		{
 			uWindSpeedBeaufort = SpeedBeaufort;
 		}
@@ -140,7 +140,7 @@ void FahESPWeatherStation::SetWindGustSpeed(const float& SpeedGustsMS, const boo
 	{
 		//Speed M/S
 		String Body3 = String(SpeedGustsMS, 2);
-		if (EnqueDataPoint(FreeAtHomeESPapi::GetChannelString(3), FreeAtHomeESPapi::GetODPString(3), Body3))
+		if (EnqueSetDataPoint(FreeAtHomeESPapi::GetChannelString(3), FreeAtHomeESPapi::GetODPString(3), Body3))
 		{
 			WindSpeedMS = SpeedGustsMS;
 		}

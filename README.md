@@ -15,7 +15,7 @@ A basic implementation of the Virtual Switch is included.
 ### Monitoring Events
 Here is sample code showing how to use the `Free-ESPatHome` libary for monitoring FaH events: 
 
-```
+```ino
 #include "FreeAtHomeESPapi.h"
 FreeAtHomeESPapi freeAtHomeESPapi;
 
@@ -66,7 +66,7 @@ void loop(void)
 
 ### Creating a virtual Switch
 
-```
+```ino
 #include "FreeAtHomeESPapi.h"
 #include "FahESPDevice.h"
 #include "FahESPSwitchDevice.h"

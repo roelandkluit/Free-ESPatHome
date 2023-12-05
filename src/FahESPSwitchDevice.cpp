@@ -2,15 +2,15 @@
 *
 * Title			    : Free-ESPatHome
 * Description:      : Library that implements the Busch-Jeager / ABB Free@Home API for ESP8266 and ESP32.
-* Version		    : v 0.6
-* Last updated      : 2023.11.06
+* Version		    : v 0.7
+* Last updated      : 2023.12.05
 * Target		    : ESP32, ESP8266, ESP8285
 * Author            : Roeland Kluit
 * Web               : https://github.com/roelandkluit/Free-ESPatHome
 * License           : GPL-3.0 license
 *
 **************************************************************************************************************/
-#include "BuildConfig.h"
+#include "FahESPBuildConfig.h"
 #include "FahESPSwitchDevice.h"
 
 const String FahESPSwitchDevice::ConstStringDeviceType = "SwitchingActuator";
@@ -55,7 +55,7 @@ FahESPSwitchDevice::~FahESPSwitchDevice()
 
 void FahESPSwitchDevice::NotifyFahDataPoint(const String& strChannel, const String& strDataPoint, const String& strValue, const bool& isSceneOrGetValue)
 {
-	DEBUG_P("VDN:");	DEBUG_P(strChannel); DEBUG_P("."); DEBUG_P(strDataPoint); DEBUG_P("=");	DEBUG_PL(strValue);
+	//DEBUG_P("VDN:");	DEBUG_P(strChannel); DEBUG_P("."); DEBUG_P(strDataPoint); DEBUG_P("=");	DEBUG_PL(strValue);
 	if (strChannel == FreeAtHomeESPapi::GetChannelString(0))
 	{
 		if (strDataPoint == FreeAtHomeESPapi::GetIDPString(0) || (isSceneOrGetValue && strDataPoint == FreeAtHomeESPapi::GetODPString(0)))

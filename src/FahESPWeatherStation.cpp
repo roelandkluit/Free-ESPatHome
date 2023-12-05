@@ -2,8 +2,8 @@
 *
 * Title			    : Free-ESPatHome
 * Description:      : Library that implements the Busch-Jeager / ABB Free@Home API for ESP8266 and ESP32.
-* Version		    : v 0.6
-* Last updated      : 2023.11.06
+* Version		    : v 0.7
+* Last updated      : 2023.12.05
 * Target		    : ESP32, ESP8266, ESP8285
 * Author            : Roeland Kluit
 * Web               : https://github.com/roelandkluit/Free-ESPatHome
@@ -11,7 +11,7 @@
 *
 **************************************************************************************************************/
 #include "FahESPWeatherStation.h"
-#include <stdint-gcc.h>
+#include "FahParamDefinitions.h"
 
 const String FahESPWeatherStation::ConstStringDeviceType = "WeatherStation";
 
@@ -31,6 +31,35 @@ FahESPWeatherStation::~FahESPWeatherStation()
 void FahESPWeatherStation::NotifyFahDataPoint(const String& strChannel, const String& strDataPoint, const String& strValue, const bool& isSceneOrGetValue)
 {
 	//No events needed
+}
+
+void FahESPWeatherStation::NotifyDeviceParameter(const String& strChannel, const uint16_t& Parameter, const String& strValue)
+{
+	//DEBUG_P(String(F("NDP:"))); DEBUG_P(strChannel); DEBUG_P('>'); DEBUG_P(Parameter); DEBUG_P('>'); DEBUG_PL(strValue);
+	if(FreeAtHomeESPapi::GetChannelString(2) == strChannel)
+	{
+		if(Parameter == PID_FROST_ALARM_ACTIVATION_LEVEL)
+		{
+			int lAlarmValue = strValue.toInt();
+			if (lAlarmValue != this->alarmTemperature)
+			{
+				DEBUG_PL(String(F("newTempAlarm")));
+				this->alarmTemperature = lAlarmValue;
+			}
+		}
+	}
+	if (FreeAtHomeESPapi::GetChannelString(3) == strChannel)
+	{
+		if (Parameter == PID_WIND_FORCE)
+		{
+			int lAlarmValue = strValue.toInt();
+			if (lAlarmValue != this->alarmWindForce)
+			{
+				DEBUG_PL(String(F("newWindAlarm")));
+				this->alarmWindForce = lAlarmValue;
+			}
+		}
+	}
 }
 
 void FahESPWeatherStation::SetBrightnessLevelWM2(const uint16_t &level)
@@ -61,7 +90,7 @@ void FahESPWeatherStation::SetBrightnessLevelLux(const uint16_t &level, const bo
 	}
 }
 
-void FahESPWeatherStation::SetRainInformation(const float &amount_of_rain, const bool& forceupdate)
+void FahESPWeatherStation::SetRainInformation(const float &amount_of_rain, const bool &isRaining, const bool& forceupdate)
 {
 	if (!forceupdate && lvRain == amount_of_rain)
 		return;
@@ -69,7 +98,7 @@ void FahESPWeatherStation::SetRainInformation(const float &amount_of_rain, const
 	{
 		//Alarm
 		String Body1 = FreeAtHomeESPapi::VALUE_0;
-		if (amount_of_rain > 0)
+		if (amount_of_rain > 0 || isRaining)
 		{
 			Body1 = FreeAtHomeESPapi::VALUE_1;
 		}
@@ -92,7 +121,7 @@ void FahESPWeatherStation::SetTemperatureLevel(const float &MessuredTemp, const 
 	{
 		//Alarm
 		String Body1 = FreeAtHomeESPapi::VALUE_0;
-		if (MessuredTemp <= 0)
+		if (MessuredTemp <= alarmTemperature)
 		{
 			Body1 = FreeAtHomeESPapi::VALUE_1;
 		}
@@ -119,7 +148,7 @@ void FahESPWeatherStation::SetWindSpeedBeaufort(const uint8_t& SpeedBeaufort, co
 	{
 		//Alarm
 		String Body1 = FreeAtHomeESPapi::VALUE_0;
-		if (SpeedBeaufort > 3)
+		if (SpeedBeaufort >= alarmWindForce)
 		{
 			Body1 = FreeAtHomeESPapi::VALUE_1;
 		}

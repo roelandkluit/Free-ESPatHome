@@ -2,7 +2,7 @@
 #define WEBSOCKETCLIENT_H
 
 #include <WiFiClient.h>
-#include "BuildConfig.h"
+#include "FahESPBuildConfig.h"
 
 class WebSocketClient {
 public:

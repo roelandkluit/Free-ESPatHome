@@ -2,8 +2,8 @@
 *
 * Title			    : Free-ESPatHome
 * Description:      : Library that implements the Busch-Jeager / ABB Free@Home API for ESP8266 and ESP32.
-* Version		    : v 0.6
-* Last updated      : 2023.11.06
+* Version		    : v 0.7
+* Last updated      : 2023.12.05
 * Target		    : ESP32, ESP8266, ESP8285
 * Author            : Roeland Kluit
 * Web               : https://github.com/roelandkluit/Free-ESPatHome
@@ -20,7 +20,7 @@
 	#endif
 #endif
 
-#include "BuildConfig.h"
+#include "FahESPBuildConfig.h"
 #include "FahEventEnabledClass.h"
 #include <ArduinoJson.h>
 #include <stdint.h>
@@ -63,6 +63,7 @@ public:
 	static String ConstructDeviceRegistrationBody(const String& DeviceType, const String& DisplayName, const uint16_t& Timeout);
 	static String ConstructDeviceDataPointNotificationURI(const String& deviceFaHID, const String& channel, const String& datapoint);
 	static String ConstructDeviceDataPointNotificationURI(const String& fulldatapoint);
+	static String ConstructGetDeviceDetailsURI(const String& deviceFaHID);
 	static bool GetStringToken(String& from, String& to, uint8_t index, char separator);
 	bool RemoveDevice(FahESPDevice* Device);
 	static const String KEY_ROOT;
@@ -73,7 +74,9 @@ public:
 	static const String KEY_VALUE;
 	static const String KEY_VALUES;
 	static const String KEY_DEVICES;
+	static const String KEY_DISPLAYNAME;
 	static const String KEY_SCENESTRIGGERED;
+	static const String KEY_PARAMETERS;
 	static const String VALUE_0;
 	static const String VALUE_1;
 	static const char KEY_DATAPOINT_SEPERATOR = '/';

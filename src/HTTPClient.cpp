@@ -2,8 +2,8 @@
 *
 * Title			    : Free-ESPatHome
 * Description:      : Library that implements the Busch-Jeager / ABB Free@Home API for ESP8266 and ESP32.
-* Version		    : v 0.6
-* Last updated      : 2023.11.06
+* Version		    : v 0.7
+* Last updated      : 2023.12.05
 * Target		    : ESP32, ESP8266, ESP8285
 * Author            : Roeland Kluit
 * Web               : https://github.com/roelandkluit/Free-ESPatHome
@@ -128,9 +128,10 @@ bool HTTPClient::ReadHeaders(String& Key, String& Value)
             if(client->available())
             {
                 String line = client->readStringUntil('\n');
+                //DEBUG_PL(line);
                 if(line.length() <= 1)
                 {
-                    //DEBUG_PL(F("DataStart"));
+                    //DEBUG_PL(F("END_head"));
                     this->state = HTTPCLIENT_STATE::HTTPCLIENT_STATE_DATA;
                 }
                 else
@@ -143,7 +144,7 @@ bool HTTPClient::ReadHeaders(String& Key, String& Value)
 			            Key.toLowerCase();  // Make all headers lowercase for case-insensitve comparison
 			            Value = line.substring(col + 2, line.length() - 1);
                         ReturnHeaderKeys += Key + "\n";
-                        ReturnHeaderValues += Value + "\n";                        
+                        ReturnHeaderValues += Value + "\n";
                         return true;                
                     }
                 }
@@ -284,7 +285,8 @@ bool HTTPClient::Request(const String& HTTPCommand, const String& URL, const Str
 {
     if (this->state == HTTPCLIENT_STATE::HTTPCLIENT_STATE_CONNECTED)
     {
-        String HTTPrequestPacket = HTTPCommand + " " + URL + F(" HTTP/1.1\r\nConnection: Close\r\n");
+        //Set http version to 1.0 to disable chunked responses
+        String HTTPrequestPacket = HTTPCommand + " " + URL + F(" HTTP/1.0\r\nConnection: Close\r\n");
 
         if (PostData.length() != 0)
         {

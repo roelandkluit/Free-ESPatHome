@@ -2,8 +2,8 @@
 *
 * Title			    : Free-ESPatHome
 * Description:      : Library that implements the Busch-Jeager / ABB Free@Home API for ESP8266 and ESP32.
-* Version		    : v 0.6
-* Last updated      : 2023.11.06
+* Version		    : v 0.7
+* Last updated      : 2023.12.05
 * Target		    : ESP32, ESP8266, ESP8285
 * Author            : Roeland Kluit
 * Web               : https://github.com/roelandkluit/Free-ESPatHome
@@ -19,7 +19,7 @@ bool FahESPDevice::EnqueDataPoint(const bool& GetValue, const String Channel, co
 	if (!GetValue)
 		reqType = String(F("PUT"));
 
-	String sDeviceID = FreeAtHomeESPapi::U64toString(FahDevice);
+	String sDeviceID = GetDeviceIDAsString();
 	String Entry = reqType + ":" + sDeviceID + "." + Channel + "." + DataPoint + ":" + Value;
 	//DEBUG_PL(Entry.c_str());
 	return EnqueSetDataPoint(Entry);
@@ -106,15 +106,15 @@ FahESPDevice::~FahESPDevice()
 	}
 }
 
-String FahESPDevice::GetJsonDeviceValueFromResponse(const String &Response)
+String FahESPDevice::ProcessJsonFromResponse(const String &Response)
 {
-	DynamicJsonDocument fahJsonMsg(2000);
+	DynamicJsonDocument fahJsonMsg(3000);
 	DeserializationError error = deserializeJson(fahJsonMsg, Response);
 
 	if (error)
 	{
 		// Test if parsing succeeds.
-		//DEBUG_P(F("deserializeJson() failed: ")); DEBUG_PL(error.f_str());
+		DEBUG_P(F("deserializeJson() failed: ")); DEBUG_PL(error.f_str());
 		//DEBUG_PL(Response);
 		return "";
 	}
@@ -123,6 +123,7 @@ String FahESPDevice::GetJsonDeviceValueFromResponse(const String &Response)
 		if (fahJsonMsg.containsKey(FreeAtHomeESPapi::KEY_ROOT))
 		{
 			JsonObject root = fahJsonMsg[FreeAtHomeESPapi::KEY_ROOT].as<JsonObject>();
+			//Is device value response
 			if (root.containsKey(FreeAtHomeESPapi::KEY_VALUES))
 			{
 				JsonArray values = root[FreeAtHomeESPapi::KEY_VALUES].as<JsonArray>();
@@ -133,9 +134,77 @@ String FahESPDevice::GetJsonDeviceValueFromResponse(const String &Response)
 					return s;
 				}
 			}
+			//Is device config response
+			else if (root.containsKey(FreeAtHomeESPapi::KEY_DEVICES))
+			{
+				JsonObject devices = root[FreeAtHomeESPapi::KEY_DEVICES].as<JsonObject>();
+				String DevString = GetDeviceIDAsString();
+				if (devices.containsKey(DevString))
+				{
+					//Process Device and look for deviceName
+					JsonObject device = devices[DevString].as<JsonObject>();
+					if (device.containsKey(FreeAtHomeESPapi::KEY_DISPLAYNAME))
+					{
+						JsonString value = device[FreeAtHomeESPapi::KEY_DISPLAYNAME].as<JsonString>();
+						DisplayName = "" + String(value.c_str());
+						this->NotifyCallback(FAHESPAPI_EVENT::FAHESPAPI_ON_DISPLAYNAME, this->FahDevice, "", "", (void*)value.c_str());
+					}
+
+					//Process Channels and look for Parameters
+					if (device.containsKey(FreeAtHomeESPapi::KEY_CHANNELS))
+					{
+						//DEBUG_PL("Channels");
+						JsonObject channels = device[FreeAtHomeESPapi::KEY_CHANNELS].as<JsonObject>();
+						for (JsonPair keyChan : channels)
+						{
+							String ChannelName = String(keyChan.key().c_str());
+							JsonObject Chan = keyChan.value().as<JsonObject>();
+							ProcessJsonDeviceParms(Chan, ChannelName);
+						}
+					}
+					
+					//Process Device and look for device parameters
+					ProcessJsonDeviceParms(device, "");
+				}				
+			}
 		}
 	}
 	return "";
+}
+
+void FahESPDevice::ProcessJsonDeviceParms(JsonObject &jsonObj, const String &channel)
+{
+	if (jsonObj.containsKey(FreeAtHomeESPapi::KEY_PARAMETERS))
+	{
+		//DEBUG_PL("PARMS!");
+		JsonObject parms = jsonObj[FreeAtHomeESPapi::KEY_PARAMETERS].as<JsonObject>();
+		for (JsonPair keyParm : parms)
+		{
+			String Parm = String(keyParm.key().c_str());
+			if (Parm.indexOf(F("par")) == 0)
+			{
+				Parm = Parm.substring(3);
+				uint16_t iParm = strtol(Parm.c_str(), NULL, 16);
+				String Value = String(keyParm.value().as<JsonString>().c_str());
+				NotifyDeviceParameter(channel, iParm, Value);
+				/*Serial.print(channel);
+				Serial.print("->");
+				Serial.print();
+				Serial.print("==");
+				Serial.println(keyParm.value().as<JsonString>().c_str());*/
+			}
+		}
+	}
+}
+
+String FahESPDevice::GetDeviceIDAsString()
+{
+	String sDeviceID = FreeAtHomeESPapi::U64toString(FahDevice);
+	return sDeviceID;
+}
+
+void FahESPDevice::NotifyDeviceParameter(const String& strChannel, const uint16_t& Parameter, const String& strValue)
+{
 }
 
 bool FahESPDevice::GetDataPointAndChannelFromURL(const String& URL, String& channel, String& datapoint)
@@ -143,7 +212,7 @@ bool FahESPDevice::GetDataPointAndChannelFromURL(const String& URL, String& chan
 	uint16_t end_pos = 0;
 	uint16_t start_pos = 0;
 
-	String sDeviceID = FreeAtHomeESPapi::U64toString(FahDevice) + ".";
+	String sDeviceID = GetDeviceIDAsString() + ".";
 	start_pos = URL.indexOf(sDeviceID);
 
 	if (start_pos > 0)
@@ -172,6 +241,7 @@ void FahESPDevice::processBase()
 		else
 		{
 			httpclt->ProcessAsync();
+			return;
 		}
 	}
 	else if (httpclt->GetAsyncStatus() == HTTPREQUEST_STATUS::HTTPREQUEST_STATUS_FAILED)
@@ -186,24 +256,38 @@ void FahESPDevice::processBase()
 		{
 			if (httpclt->GetResponseHeaderByKey(String(F("content-type"))) == String(F("application/json")))
 			{
-				//DEBUG_P("Process: ");
-				String Channel = "";
-				String DataPoint = "";
-				if (GetDataPointAndChannelFromURL(httpclt->LastURIRequested(), Channel, DataPoint))
+				if (httpclt->LastURIRequested().indexOf(F("/rest/datapoint/")) > 0)
 				{
 					String returndata = httpclt->GetBody();
-					String value = GetJsonDeviceValueFromResponse(returndata);
-					if (value.length() > 0)
+					DEBUG_P(String(F("ProcDP: ")));
+					DEBUG_PL(returndata);
+
+					String Channel = "";
+					String DataPoint = "";
+					if (GetDataPointAndChannelFromURL(httpclt->LastURIRequested(), Channel, DataPoint))
 					{
-						//DEBUG_F("CH: %s, DP: %s, Val: %s\r\n", Channel.c_str(), DataPoint.c_str(), value.c_str());
-						NotifyFahDataPoint(Channel, DataPoint, value, true);
+						String value = ProcessJsonFromResponse(returndata);
+						if (value.length() > 0)
+						{
+							//DEBUG_F("CH: %s, DP: %s, Val: %s\r\n", Channel.c_str(), DataPoint.c_str(), value.c_str());
+							NotifyFahDataPoint(Channel, DataPoint, value, true);
+						}
 					}
+				}
+				else if (httpclt->LastURIRequested().indexOf(F("/rest/device/")) > 0)
+				{
+					String returndata = httpclt->GetBody();
+					DEBUG_P(String(F("ProcRD: ")));
+					DEBUG_PL(returndata);
+					String d = ProcessJsonFromResponse(returndata);
 				}
 			}
 		}
 		httpclt->ReleaseAsync();
-		lastSendGap = 10;
+		lastSendGap = 50;
 	}
+
+	//Update Registration
 	else if ((millis() - this->LastWaitInterval) > this->WaitTimeMs)
 	{
 		if (lastSendGap == 0)
@@ -216,9 +300,15 @@ void FahESPDevice::processBase()
 			{
 				//ASync started, reset counter
 				this->LastWaitInterval = millis();
+				if (this->requestConfigSkip > 0)
+				{
+					this->requestConfigSkip--;
+				}
 			}
 		}
 	}
+
+	//Send datapoints
 	else if (PendingDataPointsCount > 0)
 	{
 		if (lastSendGap == 0)
@@ -238,7 +328,7 @@ void FahESPDevice::processBase()
 					if (strDataPointRequestType == String(F("GET")) || FreeAtHomeESPapi::GetStringToken(strDataPoint, strDataPointValue, token_idx, ':'))
 					{
 						String URI = FreeAtHomeESPapi::ConstructDeviceDataPointNotificationURI(strDataPointPart);
-						//DEBUG_PL(URI); DEBUG_PL(strDataPointRequestType);	DEBUG_PL(strDataPointPart);
+						//DEBUG_PL(URI); DEBUG_PL(strDataPointRequestType); DEBUG_PL(strDataPointPart);
 
 						if (!httpclt->HTTPRequestAsync(strDataPointRequestType, URI, strDataPointValue))
 						{
@@ -255,6 +345,22 @@ void FahESPDevice::processBase()
 				}
 			}
 		}
+	}
+
+	//Get Parameters
+	else if (this->requestConfigSkip == 0 && lastSendGap == 0)
+	{
+		String URI = FreeAtHomeESPapi::ConstructGetDeviceDetailsURI(GetDeviceIDAsString());
+		DEBUG_PL(URI); 
+
+		if (!httpclt->HTTPRequestAsync("GET", URI, ""))
+		{
+			requestConfigSkip = 1;
+		}
+		else
+		{
+			requestConfigSkip = PARAMETER_REFRESH_INTERVAL;
+		}		
 	}
 	if (lastSendGap > 0)
 	{

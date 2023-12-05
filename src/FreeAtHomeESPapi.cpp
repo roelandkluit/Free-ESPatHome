@@ -2,8 +2,8 @@
 *
 * Title			    : Free-ESPatHome
 * Description:      : Library that implements the Busch-Jeager / ABB Free@Home API for ESP8266 and ESP32.
-* Version		    : v 0.6
-* Last updated      : 2023.11.06
+* Version		    : v 0.7
+* Last updated      : 2023.12.05
 * Target		    : ESP32, ESP8266, ESP8285
 * Author            : Roeland Kluit
 * Web               : https://github.com/roelandkluit/Free-ESPatHome
@@ -23,7 +23,9 @@ const String FreeAtHomeESPapi::KEY_INPUTS = "inputs";
 const String FreeAtHomeESPapi::KEY_VALUE = "value";
 const String FreeAtHomeESPapi::KEY_VALUES = "values";
 const String FreeAtHomeESPapi::KEY_DEVICES = "devices";
+const String FreeAtHomeESPapi::KEY_DISPLAYNAME = "displayName";
 const String FreeAtHomeESPapi::KEY_SCENESTRIGGERED = "scenesTriggered";
+const String FreeAtHomeESPapi::KEY_PARAMETERS = "parameters";
 const String FreeAtHomeESPapi::VALUE_0 = "0";
 const String FreeAtHomeESPapi::VALUE_1 = "1";
 
@@ -437,6 +439,12 @@ String FreeAtHomeESPapi::ConstructDeviceDataPointNotificationURI(const String& d
 String FreeAtHomeESPapi::ConstructDeviceDataPointNotificationURI(const String& fulldatapoint)
 {
 	String URI = String(F("/fhapi/v1/api/rest/datapoint/")) + KEY_ROOT + String(F("/")) + fulldatapoint;
+	return URI;
+}
+
+String FreeAtHomeESPapi::ConstructGetDeviceDetailsURI(const String& deviceFaHID)
+{
+	String URI = String(F("/fhapi/v1/api/rest/device/")) + KEY_ROOT + String(F("/")) + deviceFaHID;	
 	return URI;
 }
 

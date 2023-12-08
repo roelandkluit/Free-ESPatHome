@@ -2,8 +2,8 @@
 *
 * Title			    : Free-ESPatHome
 * Description:      : Library that implements the Busch-Jeager / ABB Free@Home API for ESP8266 and ESP32.
-* Version		    : v 0.7
-* Last updated      : 2023.12.05
+* Version		    : v 0.8
+* Last updated      : 2023.12.08
 * Target		    : ESP32, ESP8266, ESP8285
 * Author            : Roeland Kluit
 * Web               : https://github.com/roelandkluit/Free-ESPatHome
@@ -173,7 +173,13 @@ FahESPDevice* FreeAtHomeESPapi::CreateDevice(const String& SerialNr, const Strin
 
 	FahHTTPClient* httpclt = new FahHTTPClient(this->SysApInfo);
 	String URI = FreeAtHomeESPapi::ConstructDeviceRegistrationURI(SerialNr);
-	String HTTPPostData = FreeAtHomeESPapi::ConstructDeviceRegistrationBody(deviceType, DisplayName, timeout);
+	String sDisplayName = DisplayName;
+	if (DisplayName.indexOf('"') >= 0)
+	{
+		//Removing " in the name string
+		sDisplayName.replace('"', '_');
+	}
+	String HTTPPostData = FreeAtHomeESPapi::ConstructDeviceRegistrationBody(deviceType, sDisplayName, timeout);
 
 	if (!httpclt->HTTPRequest(String(F("PUT")), URI, HTTPPostData))
 	{
@@ -547,7 +553,7 @@ void FreeAtHomeESPapi::NotifyCallbacks(FAHESPAPI_EVENT Event, uint64_t FAHID, co
 			if(MatchChannelDataPoint(ptrChannel, ptrDataPoint, 0, 0, false))
 			{
 				bNightActuatorForSysAp = (String((const char*)ptrValue) == "1");
-				/*for (uint8_t i = 0; i < 10; i++)
+				/*for (uint8_t i = 0; i < MAX_ESP_CREATED_DEVICES; i++)
 				{
 					if (EspDevices[i] != NULL)
 					{
@@ -558,7 +564,7 @@ void FreeAtHomeESPapi::NotifyCallbacks(FAHESPAPI_EVENT Event, uint64_t FAHID, co
 			}
 		}
 
-		for (uint8_t i = 0; i < 10; i++)
+		for (uint8_t i = 0; i < MAX_ESP_CREATED_DEVICES; i++)
 		{
 			if (EspDevices[i] != NULL)
 			{

@@ -125,7 +125,7 @@ void loop(void)
 }
 ```
 
-Currently only the VirtualSwitch device is implemented.
+Currently only the VirtualSwitch and WeatherStation devices are implemented.
 
 ## License
 GNU General Public License v3.0

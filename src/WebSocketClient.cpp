@@ -5,6 +5,7 @@
 // Updated SSL
 // Non blocking
 // Added keepalives
+// Added message continuation
 
 #include "WebSocketClient.h"
 #include <WiFiClientSecure.h>
@@ -81,10 +82,10 @@ bool WebSocketClient::connect(const String& host, const String& path, uint16_t p
 	// send handshake
 	String handshake = String(F("GET ")) + path + String(F(" HTTP/1.1\r\nHost: ")) + host + 
 			String(F("\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Version: 13\r\nSec-WebSocket-Key: ")) +
-			generateKey() + "==\r\n";
+			generateKey() + String(F("==\r\n"));
 
 	if (authorizationHeader != "")
-		handshake += String(F("Authorization: ")) + authorizationHeader + "\r\n";
+		handshake += String(F("Authorization: ")) + authorizationHeader + String(F("\r\n"));
 
 	handshake += String(F("\r\n"));
 
@@ -116,8 +117,8 @@ bool WebSocketClient::connect(const String& host, const String& path, uint16_t p
 			}
 		}
 		// Headers
-		else if (s.indexOf(F(":")) != -1) {
-			auto col = s.indexOf(F(":"));
+		else if (s.indexOf(':') != -1) {
+			auto col = s.indexOf(':');
 			auto key = s.substring(0, col);
 			key.toLowerCase();  // Make all headers lowercase for case-insensitve comparison
 			auto value = s.substring(col + 2, s.length() - 1);
@@ -208,7 +209,10 @@ void WebSocketClient::send(const String& str, const uint8_t& wsOpcode) {
 	}
 }
 
-int WebSocketClient::timedRead() {
+int WebSocketClient::timedRead()
+{
+	//timedRead is currently blocking
+	//Todo fix if data is not available for ~250 millis()
 	while (!client->available())
 	{
 		if (!client->connected())
@@ -259,7 +263,7 @@ bool WebSocketClient::getMessage(String& message) {
 	}*/
 
 	// 2. read length and check if masked
-	int length = timedRead();
+	unsigned int length = timedRead();
 	bool hasMask = false;
 	if (length & WS_MASK) {
 		hasMask = true;
@@ -280,21 +284,40 @@ bool WebSocketClient::getMessage(String& message) {
 		mask[3] = timedRead();
 
 		// 4. read message (masked)
-		message = "";
+		//message = "";
 		for (int i = 0; i < length; ++i) {
 			message += (char) (timedRead() ^ mask[i % 4]);
 		}
 	} else {
 		// 4. read message (unmasked)
-		message = "";
+		//message = "";
 		for (int i = 0; i < length; ++i) {
 			message += (char) timedRead();
+		}
+	}
+
+	if ((msgtype & WS_OPCODE_PONG) != WS_OPCODE_PONG)
+	{
+		//DEBUG_P(String(F("Opcode: "))); DEBUG_PL(msgtype);
+
+		if ((msgtype & WS_FIN) == WS_FIN)
+		{
+			//DEBUG_PL(String(F("MSG_done!")));
+			//DEBUG_PL(message);
+			//DEBUG_PL(String(F("END_done!")));
+		}
+		else
+		{
+			//DEBUG_PL(String(F("MSG_Moredata!")));
+			getMessage(message);
+			//DEBUG_PL(message);
+			//DEBUG_PL(String(F("END_Moredata!")));
 		}
 	}
 
 	if ((msgtype & WS_OPCODE_TEXT) == WS_OPCODE_TEXT)
 	{
 		return true;
-	}    
+	}
     return false;
 }

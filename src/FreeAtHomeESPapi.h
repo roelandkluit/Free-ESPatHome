@@ -41,7 +41,7 @@ class FreeAtHomeESPapi : public FahEventEnabledClass
 public:
 	static const uint64_t SYSAP_FAH_ID = 0xABB700000000;
 	static const uint8_t FAHESP_VERSION_MAJOR = 0;
-	static const uint8_t FAHESP_VERSION_MINOR = 6;
+	static const uint8_t FAHESP_VERSION_MINOR = 9;
 	static String Version() { return String(FAHESP_VERSION_MAJOR) + "." + String(FAHESP_VERSION_MINOR) + String(F(" - Roeland Kluit")); }
 	FreeAtHomeESPapi();
 	~FreeAtHomeESPapi();

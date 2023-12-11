@@ -2,8 +2,8 @@
 *
 * Title			    : Free-ESPatHome
 * Description:      : Library that implements the Busch-Jeager / ABB Free@Home API for ESP8266 and ESP32.
-* Version		    : v 0.8
-* Last updated      : 2023.12.08
+* Version		    : v 0.9
+* Last updated      : 2023.12.11
 * Target		    : ESP32, ESP8266, ESP8285
 * Author            : Roeland Kluit
 * Web               : https://github.com/roelandkluit/Free-ESPatHome
@@ -259,8 +259,7 @@ void FahESPDevice::processBase()
 				if (httpclt->LastURIRequested().indexOf(F("/rest/datapoint/")) > 0)
 				{
 					String returndata = httpclt->GetBody();
-					DEBUG_P(String(F("ProcDP: ")));
-					DEBUG_PL(returndata);
+					//DEBUG_P(String(F("ProcDP: ")));	DEBUG_PL(returndata);
 
 					String Channel = "";
 					String DataPoint = "";
@@ -277,8 +276,7 @@ void FahESPDevice::processBase()
 				else if (httpclt->LastURIRequested().indexOf(F("/rest/device/")) > 0)
 				{
 					String returndata = httpclt->GetBody();
-					DEBUG_P(String(F("ProcRD: ")));
-					DEBUG_PL(returndata);
+					//DEBUG_P(String(F("ProcRD: "))); DEBUG_PL(returndata);
 					String d = ProcessJsonFromResponse(returndata);
 				}
 			}
@@ -351,7 +349,7 @@ void FahESPDevice::processBase()
 	else if (this->requestConfigSkip == 0 && lastSendGap == 0)
 	{
 		String URI = FreeAtHomeESPapi::ConstructGetDeviceDetailsURI(GetDeviceIDAsString());
-		DEBUG_PL(URI); 
+		//DEBUG_PL(URI);
 
 		if (!httpclt->HTTPRequestAsync("GET", URI, ""))
 		{

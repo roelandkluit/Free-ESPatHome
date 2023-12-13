@@ -27,7 +27,7 @@
 #include "FahESPSwitchDevice.h"
 
 #ifndef STASSID
-#define STASSID "WifiSID"
+#define STASSID "WifiSSID"
 #define STAPSK "WifiPassword"
 #endif
 

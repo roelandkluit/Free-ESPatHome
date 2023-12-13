@@ -2,8 +2,8 @@
 *
 * Title			    : Free-ESPatHome
 * Description:      : Library that implements the Busch-Jeager / ABB Free@Home API for ESP8266 and ESP32.
-* Version		    : v 0.9
-* Last updated      : 2023.12.11
+* Version		    : v 0.10
+* Last updated      : 2023.12.13
 * Target		    : ESP32, ESP8266, ESP8285
 * Author            : Roeland Kluit
 * Web               : https://github.com/roelandkluit/Free-ESPatHome
@@ -41,7 +41,7 @@ class FreeAtHomeESPapi : public FahEventEnabledClass
 public:
 	static const uint64_t SYSAP_FAH_ID = 0xABB700000000;
 	static const uint8_t FAHESP_VERSION_MAJOR = 0;
-	static const uint8_t FAHESP_VERSION_MINOR = 9;
+	static const uint8_t FAHESP_VERSION_MINOR = 10;
 	static String Version() { return String(FAHESP_VERSION_MAJOR) + "." + String(FAHESP_VERSION_MINOR) + String(F(" - Roeland Kluit")); }
 	FreeAtHomeESPapi();
 	~FreeAtHomeESPapi();

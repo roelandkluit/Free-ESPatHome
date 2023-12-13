@@ -2,8 +2,8 @@
 *
 * Title			    : Free-ESPatHome
 * Description:      : Library that implements the Busch-Jeager / ABB Free@Home API for ESP8266 and ESP32.
-* Version		    : v 0.9
-* Last updated      : 2023.12.11
+* Version		    : v 0.10
+* Last updated      : 2023.12.13
 * Target		    : ESP32, ESP8266, ESP8285
 * Author            : Roeland Kluit
 * Web               : https://github.com/roelandkluit/Free-ESPatHome
@@ -267,6 +267,15 @@ bool FreeAtHomeESPapi::ConnectToSysAP(const String& SysAPHostname, const String&
 	}
 	else
 	{
+		for (uint8_t i = 0; i < MAX_ESP_CREATED_DEVICES; i++)
+		{
+			if (EspDevices[i] != NULL)
+			{
+				//Notify virtual devices that the connection was lost and reconnected
+				//Allows virtual devices to get their state from sysAP
+				EspDevices[i]->NotifyOnSysAPReconnect();
+			}
+		}
 		return true;
 	}
 }
@@ -348,16 +357,9 @@ bool FreeAtHomeESPapi::process()
 			}
 
 			String msg = "";
-			String totalmsg = "";
-			unsigned int parts = 0;
-			while (ws->getMessage(msg))
+			if (ws->getMessage(msg))
 			{
-				totalmsg += msg;
-				parts++;
-			}
-			if (parts > 0)
-			{
-				ProcessJsonData(totalmsg, JsonProcessFilter::PROCESS_ACTIONS, NULL);
+				ProcessJsonData(msg, JsonProcessFilter::PROCESS_ACTIONS, NULL);
 			}
 			return true;
 		}		

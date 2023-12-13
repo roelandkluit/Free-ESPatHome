@@ -2,8 +2,8 @@
 *
 * Title			    : Free-ESPatHome
 * Description:      : Library that implements the Busch-Jeager / ABB Free@Home API for ESP8266 and ESP32.
-* Version		    : v 0.9
-* Last updated      : 2023.12.11
+* Version		    : v 0.10
+* Last updated      : 2023.12.13
 * Target		    : ESP32, ESP8266, ESP8285
 * Author            : Roeland Kluit
 * Web               : https://github.com/roelandkluit/Free-ESPatHome
@@ -17,13 +17,8 @@ const String FahESPSwitchDevice::ConstStringDeviceType = "SwitchingActuator";
 
 FahESPSwitchDevice::FahESPSwitchDevice(const uint64_t& FahAbbID, const String& SerialNr, const uint16_t& timeout, FreeAtHomeESPapi* fahParent, FahSysAPInfo* SysApInfo):FahESPDevice(ConstStringDeviceType, FahAbbID, SerialNr, timeout, fahParent, SysApInfo)
 {	
-	//Set initial state, todo: change to parameter state request 
-	/*
-	    string dataPointValue = client.DownloadString("https://" + EndPointURL + "/fhapi/v1/api/rest/datapoint/00000000-0000-0000-0000-000000000000/" + dataPoint.device + "." + dataPoint.channel + "." + dataPoint.datapoint);
-        JArray jsonArraydataPointValue = (JArray)JObject.Parse(dataPointValue)["00000000-0000-0000-0000-000000000000"]["values"];
-	*/
-	EnqueGetDataPoint(FreeAtHomeESPapi::GetChannelString(0), FreeAtHomeESPapi::GetODPString(0));
-	//SetState(0);
+	//Functionality identical when reconnect of SysAP
+	NotifyOnSysAPReconnect();
 }
 
 void FahESPSwitchDevice::process()
@@ -51,6 +46,13 @@ void FahESPSwitchDevice::SetState(bool isOn)
 
 FahESPSwitchDevice::~FahESPSwitchDevice()
 {
+}
+
+void FahESPSwitchDevice::NotifyOnSysAPReconnect()
+{
+	//Ensure to retrieve device state again after reconnect of SysAp
+	//Same procedure as after device registration
+	EnqueGetDataPoint(FreeAtHomeESPapi::GetChannelString(0), FreeAtHomeESPapi::GetODPString(0));
 }
 
 void FahESPSwitchDevice::NotifyFahDataPoint(const String& strChannel, const String& strDataPoint, const String& strValue, const bool& isSceneOrGetValue)

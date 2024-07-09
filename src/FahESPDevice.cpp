@@ -241,6 +241,14 @@ void FahESPDevice::processBase()
 		{
 			httpclt->ReleaseAsync();
 			lastSendGap = 200;
+			if (LastDequedDataPoint != "")
+			{
+				EnqueSetDataPoint(LastDequedDataPoint);
+			}
+			else
+			{
+				LastDequedDataPoint = "";
+			}
 		}
 		else
 		{
@@ -315,19 +323,19 @@ void FahESPDevice::processBase()
 	{
 		if (lastSendGap == 0)
 		{
-			String strDataPoint = DequeDataPoint();
+			LastDequedDataPoint = DequeDataPoint();
 			String strDataPointRequestType = "";
 			String strDataPointPart = "";
 			String strDataPointValue = "";
 
 			uint8_t token_idx = 0;
-			if (FreeAtHomeESPapi::GetStringToken(strDataPoint, strDataPointRequestType, token_idx, ':'))
+			if (FreeAtHomeESPapi::GetStringToken(LastDequedDataPoint, strDataPointRequestType, token_idx, ':'))
 			{
 				token_idx++;
-				if (FreeAtHomeESPapi::GetStringToken(strDataPoint, strDataPointPart, token_idx, ':'))
+				if (FreeAtHomeESPapi::GetStringToken(LastDequedDataPoint, strDataPointPart, token_idx, ':'))
 				{
 					token_idx++;
-					if (strDataPointRequestType == String(F("GET")) || FreeAtHomeESPapi::GetStringToken(strDataPoint, strDataPointValue, token_idx, ':'))
+					if (strDataPointRequestType == String(F("GET")) || FreeAtHomeESPapi::GetStringToken(LastDequedDataPoint, strDataPointValue, token_idx, ':'))
 					{
 						String URI = FreeAtHomeESPapi::ConstructDeviceDataPointNotificationURI(strDataPointPart);
 						//DEBUG_PL(URI); DEBUG_PL(strDataPointRequestType); DEBUG_PL(strDataPointPart);
@@ -338,7 +346,7 @@ void FahESPDevice::processBase()
 							{
 								//Put it back, failed to send
 								//But only if the que is not filled completly
-								EnqueSetDataPoint(strDataPoint);
+								EnqueSetDataPoint(LastDequedDataPoint);
 							}
 							lastSendGap = 200;
 							//DEBUG_P("ERROR_DPN:"); DEBUG_P(strDataPointPart); DEBUG_P(", Value:"); DEBUG_PL(strDataPointValue);

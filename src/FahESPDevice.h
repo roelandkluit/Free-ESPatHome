@@ -39,6 +39,7 @@ class FahESPDevice : public FahEventEnabledClass
 		bool GetDataPointAndChannelFromURL(const String& URL, String& channel, String& datapoint);
 		String GetDeviceIDAsString();
 		virtual void NotifyDeviceParameter(const String& strChannel, const uint16_t& Parameter, const String& strValue);
+		String LastDequedDataPoint = "";
 	private:
 		void ProcessJsonDeviceParms(JsonObject& jsonObj, const String& channel);
 		String DisplayName = "";

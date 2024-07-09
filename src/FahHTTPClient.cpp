@@ -71,8 +71,9 @@ bool FahHTTPClient::HTTPRequestAsync(const String& Method, const String& URI, co
 		Async_URI = URI;
 		Async_PostData = PostData;
 		AsyncStatus = HTTPREQUEST_STATUS::HTTPREQUEST_STATUS_PENDING;
+		return true;
 	}
-	return true;
+	return false;
 }
 
 void FahHTTPClient::ProcessAsync()

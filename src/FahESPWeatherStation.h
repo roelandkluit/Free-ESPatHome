@@ -2,8 +2,8 @@
 *
 * Title			    : Free-ESPatHome
 * Description:      : Library that implements the Busch-Jeager / ABB Free@Home API for ESP8266 and ESP32.
-* Version		    : v 0.11
-* Last updated      : 2023.12.13
+* Version		    : v 0.12
+* Last updated      : 2024.07.19
 * Target		    : ESP32, ESP8266, ESP8285
 * Author            : Roeland Kluit
 * Web               : https://github.com/roelandkluit/Free-ESPatHome
@@ -36,6 +36,7 @@ public:
 	void SetWindGustSpeed(const float& SpeedGustsMS, const bool& forceupdate = false);
 private:
 	float lvRain = -1;
+	bool lvIsRaining = false;
 	float lvTemperature = -60;
 	uint16_t lvBrightness = 0xFFFF;
 	float WindSpeedMS = -1;

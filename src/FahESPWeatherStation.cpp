@@ -2,8 +2,8 @@
 *
 * Title			    : Free-ESPatHome
 * Description:      : Library that implements the Busch-Jeager / ABB Free@Home API for ESP8266 and ESP32.
-* Version		    : v 0.11
-* Last updated      : 2023.12.13
+* Version		    : v 0.12
+* Last updated      : 2024.07.19
 * Target		    : ESP32, ESP8266, ESP8285
 * Author            : Roeland Kluit
 * Web               : https://github.com/roelandkluit/Free-ESPatHome
@@ -92,7 +92,7 @@ void FahESPWeatherStation::SetBrightnessLevelLux(const uint16_t &level, const bo
 
 void FahESPWeatherStation::SetRainInformation(const float &amount_of_rain, const bool &isRaining, const bool& forceupdate)
 {
-	if (!forceupdate && lvRain == amount_of_rain)
+	if (!forceupdate && lvRain == amount_of_rain && this->lvIsRaining == isRaining)
 		return;
 	else
 	{
@@ -101,6 +101,11 @@ void FahESPWeatherStation::SetRainInformation(const float &amount_of_rain, const
 		if (amount_of_rain > 0 || isRaining)
 		{
 			Body1 = FreeAtHomeESPapi::VALUE_1;
+			this->lvIsRaining = true;
+		}
+		else
+		{
+			this->lvIsRaining = false;
 		}
 		EnqueSetDataPoint(FreeAtHomeESPapi::GetChannelString(1), FreeAtHomeESPapi::GetODPString(0), Body1);
 

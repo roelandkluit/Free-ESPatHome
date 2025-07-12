@@ -147,17 +147,31 @@ void FahESPWeatherStation::SetWindSpeed(const uint8_t& speedBeaufort, const floa
 	SetWindGustSpeed(SpeedGustsMS, forceupdate);
 }
 
+void FahESPWeatherStation::SetWindAlarm(const bool& AlarmActive)
+{
+	//Alarm
+	String Body1 = FreeAtHomeESPapi::VALUE_0;
+	if (AlarmActive)
+	{
+		Body1 = FreeAtHomeESPapi::VALUE_1;
+	}
+	EnqueSetDataPoint(FreeAtHomeESPapi::GetChannelString(3), FreeAtHomeESPapi::GetODPString(0), Body1);
+
+}
+
 void FahESPWeatherStation::SetWindSpeedBeaufort(const uint8_t& SpeedBeaufort, const bool& forceupdate)
 {
 	if (!forceupdate && uWindSpeedBeaufort != SpeedBeaufort)
 	{
-		//Alarm
-		String Body1 = FreeAtHomeESPapi::VALUE_0;
-		if (SpeedBeaufort >= alarmWindForce)
+		if (manualWindAlarmCreation)
 		{
-			Body1 = FreeAtHomeESPapi::VALUE_1;
+			//Alarm
+			if (SpeedBeaufort >= alarmWindForce)
+			{
+				SetWindAlarm(true);
+			}
+			SetWindAlarm(false);
 		}
-		EnqueSetDataPoint(FreeAtHomeESPapi::GetChannelString(3), FreeAtHomeESPapi::GetODPString(0), Body1);
 
 		//Speed
 		String Body2 = String(SpeedBeaufort);

@@ -20,6 +20,7 @@ class FahSysAPInfo;
 class FahESPWeatherStation: public FahESPDevice
 {
 public:
+	bool manualWindAlarmCreation = false;
 	FahESPWeatherStation(const uint64_t& FahAbbID, const String& SerialNr, const uint16_t& timeout, FreeAtHomeESPapi* fahParent, FahSysAPInfo* SysApInfo);
 	void process();
 	~FahESPWeatherStation();
@@ -33,6 +34,7 @@ public:
 	void SetTemperatureLevel(const float& MessuredTemp, const bool& forceupdate = false);
 	void SetWindSpeed(const uint8_t& speedBeaufort, const float& SpeedGustsMS, const bool& forceupdate = false);
 	void SetWindSpeedBeaufort(const uint8_t& SpeedBeaufort, const bool& forceupdate = false);
+	void SetWindAlarm(const bool& AlarmActive);
 	void SetWindGustSpeed(const float& SpeedGustsMS, const bool& forceupdate = false);
 private:
 	float lvRain = -1;
